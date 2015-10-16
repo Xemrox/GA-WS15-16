@@ -43,72 +43,116 @@ namespace Folding {
         }
 
         public static void Main(string[] args) {
-
-            NodeChain nc = SeqToNodes(FS01);
+            /*NodeChain nc = SeqToNodes(FS01);
 
             Console.WriteLine(nc.ToString());
-            Console.WriteLine(FS01);
+            Console.WriteLine(FS01);*/
 
-            Console.WriteLine(CalculateEnergy(SEQ01, FOL01));
+            string chain = MergeSeqAndFold(SEQ01, FOL01);
+            NodeChain nc = SeqToNodes(chain);
+
+
+            Console.WriteLine(CalculateEnergy(ref nc));
 
             Console.ReadKey();
         }
 
         static int[][][] OrientMapping = { 
             /*X*/new int[][] {
-                     new int[] {-1,  0,  1},
-                     new int[] { 0,  1,  0},
-                     new int[] { 1,  0, -1},
-                     new int[] { 0, -1,  0}
+                                /*U L F  R*/
+                     new int[] {0, -1,  0,  1},    // Top
+                     new int[] {0,  0,  1,  0},    // Right
+                     new int[] {0,  1,  0, -1},    // Bottom
+                     new int[] {0,  0, -1,  0}     // Left
             }, 
             /*Y*/new int[][] {
-                     new int[] { 0,  1,  0},
-                     new int[] { 1,  0, -1},
-                     new int[] { 0, -1,  0},
-                     new int[] {-1,  0,  1}
+                     new int[] {0,  0,  1,  0},
+                     new int[] {0,  1,  0, -1},
+                     new int[] {0,  0, -1,  0},
+                     new int[] {0, -1,  0,  1}
                  } };
 
-        public static double CalculateEnergy(string Seq, string Fold) {
+        public static double CalculateEnergy(ref NodeChain nc) {
             int Orientation = 0;
 
             Dictionary<int, Node> Field = new Dictionary<int, Node>();
 
             Point lastPoint = new Point() { X = 0, Y = 0 };
 
-            for (int i = 0; i < Fold.Length; i++) {
+            Point Min = new Point() { X = 0, Y = 0};
+            Point Max = new Point() { X = 0, Y = 0 };
 
-                Node.NodeDirection Direction = (Node.NodeDirection) Enum.Parse(typeof(Node.NodeDirection), Fold[i].ToString());
+            // Create Field
+            Node current = nc.First;
 
-                int iDirection = (int) Direction - 1;
+            while (current != null) {
+                int iDirection = (int) current.Direction;
 
                 Point cP = new Point();
                 cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
                 cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
 
-                Orientation += ( iDirection - 1 );
+                Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
 
-                if (Orientation < 0) Orientation = 3;
-                if (Orientation > 3) Orientation = 0;
-
-                Field[lastPoint.GetHashCode()] = new Node() {
-                    Type = (Node.NodeType) Enum.Parse(typeof(Node.NodeType), Seq[i].ToString()),
-                    Direction = Node.NodeDirection.U
-                };
+                Field[lastPoint.GetHashCode()] = current;
 
                 lastPoint = cP;
 
-                //convert
-                //Node.NodeType Type = (Node.NodeType)Enum.Parse(typeof(Node.NodeType), Seq[i].ToString());
+                current = current.Next;
             }
 
-            Field[lastPoint.GetHashCode()] = new Node() {
-                Type = (Node.NodeType) Enum.Parse(typeof(Node.NodeType), Seq.Last().ToString()),
-                Direction = Node.NodeDirection.U
-            };
+            Orientation = 0;
+            lastPoint = new Point() { X = 0, Y = 0 };
+            current = nc.First;
 
+            int cNeighbour = 0;
 
-            for (int y = 2; y > -5; y--) {
-                for (int x = -3; x <= 3; x++) {
+            while (current != null) {
+                int iDirection = (int) current.Direction;
+
+                List<Node.NodeDirection> dirs = current.GetNeighbours();
+                foreach(Node.NodeDirection dir in dirs) {
+                    Point neighbour = new Point();
+                    neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int)dir];
+                    neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int)dir];
+                    Node n;
+                    if (Field.TryGetValue(neighbour.GetHashCode(), out n)) {
+                        if (n.Type == Node.NodeType.Hydrophobic)
+                            cNeighbour++;
+                    }
+                }
+                if(current == nc.First) {
+                    Point neighbour = new Point();
+                    //Navigate Backwards for the first node
+                    neighbour.X = lastPoint.X - OrientMapping[0][Orientation][(int) Node.NodeDirection.F];
+                    neighbour.Y = lastPoint.Y - OrientMapping[1][Orientation][(int) Node.NodeDirection.F];
+
+                    Node n;
+                    if (Field.TryGetValue(neighbour.GetHashCode(), out n)) {
+                        if (n.Type == Node.NodeType.Hydrophobic)
+                            cNeighbour++;
+                    }
+                }
+
+                Point cP = new Point();
+                cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
+                cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
+
+                //Find Min/Max Corners
+                Min.X = Math.Min(cP.X, Min.X);
+                Min.Y = Math.Min(cP.Y, Min.Y);
+
+                Max.X = Math.Max(cP.X, Max.X);
+                Max.Y = Math.Max(cP.Y, Max.Y);
+
+                Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
+
+                lastPoint = cP;
+                current = current.Next;
+            }
+
+            for (int y = Max.Y + 1; y >= Min.Y - 1; y--) {
+                for (int x = Min.X - 1; x <= Max.X + 1; x++) {
                     Point p = new Point() {
                         X = x,
                         Y = y
@@ -116,24 +160,16 @@ namespace Folding {
 
                     Node n;
                     if (Field.TryGetValue(p.GetHashCode(), out n)) {
-                        Console.Write(" " + n.ToString());
+                        Console.Write(" " + n.ToString(true));
                     } else {
-                        Console.Write(" x");
+                        Console.Write(" - ");
                     }
-
-                    /*if(Field.ContainsKey(p)) {
-                        Node n = Field[p];
-                        Console.Write(" "+n.ToString());
-                    } else {
-                        Console.Write(" x");
-                    }*/
-
                 }
                 Console.WriteLine();
             }
 
 
-            return 0;
+            return cNeighbour / 2;
         }
 
         /// <summary>
@@ -229,9 +265,26 @@ namespace Folding {
             get; set;
         }
 
-        public override string ToString() {
+        private static Dictionary<NodeDirection, List<NodeDirection>> NLists; 
+
+        static Node() {
+            NLists = new Dictionary<NodeDirection, List<NodeDirection>>();
+            NLists.Add(NodeDirection.F, new List<NodeDirection>() { NodeDirection.L, NodeDirection.R });
+            NLists.Add(NodeDirection.L, new List<NodeDirection>() { NodeDirection.F, NodeDirection.R });
+            NLists.Add(NodeDirection.R, new List<NodeDirection>() { NodeDirection.F, NodeDirection.L });
+            NLists.Add(NodeDirection.U, new List<NodeDirection>() { NodeDirection.L, NodeDirection.F, NodeDirection.R });
+        }
+
+        public List<NodeDirection> GetNeighbours() {
+            return NLists[this.Direction];
+        }
+
+        public string ToString(bool ShowUnknown = false) {
             string Dir = this.Direction.ToString();
-            return ( (int) this.Type ).ToString() + ( Dir == "U" ? "" : Dir );
+            return ( (int) this.Type ).ToString() + (!ShowUnknown ? ( Dir == "U" ? "" : Dir ) : Dir);
+        }
+        public override string ToString() {
+            return this.ToString(false);
         }
 
     }
