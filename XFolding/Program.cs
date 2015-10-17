@@ -30,6 +30,9 @@ namespace Folding {
         public static readonly string FOL01 = "FRFRRLLRFRRLRLLRRFR";
         public static readonly string FS01 = "0F1R0F1R1R0L0L1R0F1R1R0L1R0L0L1R1R0F1R0";
 
+        public static readonly string SEQ02 = "1101101";
+        public static readonly string FOL02 = "FFLLLF";
+
         private static string MergeSeqAndFold(string Seq, string Fold) {
             StringBuilder merge = new StringBuilder();
 
@@ -51,8 +54,12 @@ namespace Folding {
             string chain = MergeSeqAndFold(SEQ01, FOL01);
             NodeChain nc = SeqToNodes(chain);
 
+            Console.WriteLine(CalculateFitness(ref nc));
 
-            Console.WriteLine(CalculateEnergy(ref nc));
+            chain = MergeSeqAndFold(SEQ02, FOL02);
+            nc = SeqToNodes(chain);
+
+            Console.WriteLine(CalculateFitness(ref nc));
 
             Console.ReadKey();
         }
@@ -72,10 +79,10 @@ namespace Folding {
                      new int[] {0, -1,  0,  1}
                  } };
 
-        public static double CalculateEnergy(ref NodeChain nc) {
+        public static double CalculateFitness(ref NodeChain nc) {
             int Orientation = 0;
 
-            Dictionary<int, Node> Field = new Dictionary<int, Node>();
+            Dictionary<int, List<Node>> Field = new Dictionary<int, List<Node>>();
 
             Point lastPoint = new Point() { X = 0, Y = 0 };
 
@@ -94,7 +101,12 @@ namespace Folding {
 
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
 
-                Field[lastPoint.GetHashCode()] = current;
+                List<Node> FieldElem;
+                if(!Field.TryGetValue(lastPoint.GetHashCode(), out FieldElem)) {
+                    Field[lastPoint.GetHashCode()] = new List<Node>();
+                }
+
+                Field[lastPoint.GetHashCode()].Add(current);
 
                 lastPoint = cP;
 
@@ -105,9 +117,17 @@ namespace Folding {
             lastPoint = new Point() { X = 0, Y = 0 };
             current = nc.First;
 
-            int cNeighbour = 0;
+            double cNeighbour = 0;
+            double cOverlapp = 0;
 
             while (current != null) {
+                //Overlapp check
+                List<Node> currentNodes;
+                if (Field.TryGetValue(lastPoint.GetHashCode(), out currentNodes)) {
+                    cOverlapp += currentNodes.Count - 1;
+                }
+
+                //Neighbour check
                 int iDirection = (int) current.Direction;
 
                 List<Node.NodeDirection> dirs = current.GetNeighbours();
@@ -115,22 +135,33 @@ namespace Folding {
                     Point neighbour = new Point();
                     neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int)dir];
                     neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int)dir];
-                    Node n;
-                    if (Field.TryGetValue(neighbour.GetHashCode(), out n)) {
-                        if (n.Type == Node.NodeType.Hydrophobic)
-                            cNeighbour++;
+                    List<Node> neighbours;
+                    if (Field.TryGetValue(neighbour.GetHashCode(), out neighbours)) {
+                        ///? cOverlapp += n.Count - 1;
+                        /*if (n.Type == Node.NodeType.Hydrophobic)
+                            cNeighbour++;*/
+                        foreach(var n in neighbours) {
+                            if (n.Type == Node.NodeType.Hydrophobic)
+                                cNeighbour++;
+                        }
                     }
                 }
+
                 if(current == nc.First) {
                     Point neighbour = new Point();
                     //Navigate Backwards for the first node
                     neighbour.X = lastPoint.X - OrientMapping[0][Orientation][(int) Node.NodeDirection.F];
                     neighbour.Y = lastPoint.Y - OrientMapping[1][Orientation][(int) Node.NodeDirection.F];
 
-                    Node n;
-                    if (Field.TryGetValue(neighbour.GetHashCode(), out n)) {
-                        if (n.Type == Node.NodeType.Hydrophobic)
-                            cNeighbour++;
+                    List<Node> neighbours;
+                    if (Field.TryGetValue(neighbour.GetHashCode(), out neighbours)) {
+                        ///? cOverlapp += n.Count - 1;
+                        /*if (n.Type == Node.NodeType.Hydrophobic)
+                            cNeighbour++;*/
+                        foreach (var n in neighbours) {
+                            if (n.Type == Node.NodeType.Hydrophobic)
+                                cNeighbour++;
+                        }
                     }
                 }
 
@@ -158,9 +189,9 @@ namespace Folding {
                         Y = y
                     };
 
-                    Node n;
+                    List<Node> n;
                     if (Field.TryGetValue(p.GetHashCode(), out n)) {
-                        Console.Write(" " + n.ToString(true));
+                        Console.Write(" " + n.Last().ToString(true));
                     } else {
                         Console.Write(" - ");
                     }
@@ -168,8 +199,10 @@ namespace Folding {
                 Console.WriteLine();
             }
 
+            Console.WriteLine(string.Format("N: {0}", cNeighbour));
+            Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
-            return cNeighbour / 2;
+            return cNeighbour / 2.0 / Math.Max(cOverlapp, 1);
         }
 
         /// <summary>
