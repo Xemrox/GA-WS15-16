@@ -92,82 +92,39 @@ namespace Folding {
             // Create Field
             Node current = nc.First;
 
+            double cNeighbour = 0;
+            double cOverlapp = 0;
+
             while (current != null) {
                 int iDirection = (int) current.Direction;
 
                 Point cP = new Point();
                 cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
                 cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
-
-                Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
 
                 List<Node> FieldElem;
                 if(!Field.TryGetValue(lastPoint.GetHashCode(), out FieldElem)) {
                     Field[lastPoint.GetHashCode()] = new List<Node>();
                 }
 
+                //place this node on the field
                 Field[lastPoint.GetHashCode()].Add(current);
 
-                lastPoint = cP;
-
-                current = current.Next;
-            }
-
-            Orientation = 0;
-            lastPoint = new Point() { X = 0, Y = 0 };
-            current = nc.First;
-
-            double cNeighbour = 0;
-            double cOverlapp = 0;
-
-            while (current != null) {
-                //Overlapp check
-                List<Node> currentNodes;
-                if (Field.TryGetValue(lastPoint.GetHashCode(), out currentNodes)) {
-                    cOverlapp += currentNodes.Count - 1;
-                }
-
-                //Neighbour check
-                int iDirection = (int) current.Direction;
-
+                //check neighbours
                 List<Node.NodeDirection> dirs = current.GetNeighbours();
-                foreach(Node.NodeDirection dir in dirs) {
+                foreach (Node.NodeDirection dir in dirs) {
                     Point neighbour = new Point();
-                    neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int)dir];
-                    neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int)dir];
+                    neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int) dir];
+                    neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int) dir];
                     List<Node> neighbours;
                     if (Field.TryGetValue(neighbour.GetHashCode(), out neighbours)) {
-                        ///? cOverlapp += n.Count - 1;
-                        /*if (n.Type == Node.NodeType.Hydrophobic)
-                            cNeighbour++;*/
-                        foreach(var n in neighbours) {
-                            if (n.Type == Node.NodeType.Hydrophobic)
-                                cNeighbour++;
-                        }
-                    }
-                }
-
-                if(current == nc.First) {
-                    Point neighbour = new Point();
-                    //Navigate Backwards for the first node
-                    neighbour.X = lastPoint.X - OrientMapping[0][Orientation][(int) Node.NodeDirection.F];
-                    neighbour.Y = lastPoint.Y - OrientMapping[1][Orientation][(int) Node.NodeDirection.F];
-
-                    List<Node> neighbours;
-                    if (Field.TryGetValue(neighbour.GetHashCode(), out neighbours)) {
-                        ///? cOverlapp += n.Count - 1;
-                        /*if (n.Type == Node.NodeType.Hydrophobic)
-                            cNeighbour++;*/
+                        
                         foreach (var n in neighbours) {
                             if (n.Type == Node.NodeType.Hydrophobic)
                                 cNeighbour++;
                         }
                     }
                 }
-
-                Point cP = new Point();
-                cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
-                cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
 
                 //Find Min/Max Corners
                 Min.X = Math.Min(cP.X, Min.X);
@@ -177,7 +134,6 @@ namespace Folding {
                 Max.Y = Math.Max(cP.Y, Max.Y);
 
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
-
                 lastPoint = cP;
                 current = current.Next;
             }
