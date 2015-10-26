@@ -105,6 +105,9 @@ namespace Folding {
                 List<Node> FieldElem;
                 if(!Field.TryGetValue(lastPoint.GetHashCode(), out FieldElem)) {
                     Field[lastPoint.GetHashCode()] = new List<Node>();
+                } else {
+                    //we got an overlapp!
+                    cOverlapp++;
                 }
 
                 //place this node on the field
@@ -158,7 +161,7 @@ namespace Folding {
             Console.WriteLine(string.Format("N: {0}", cNeighbour));
             Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
-            return cNeighbour / 2.0 / Math.Max(cOverlapp, 1);
+            return cNeighbour / (cOverlapp + 1.0);
         }
 
         /// <summary>
