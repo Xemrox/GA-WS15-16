@@ -14,7 +14,7 @@ namespace Folding {
         }
 
         public string foldSeq {
-            get; private set;
+            get; set;
         }
 
         public Folding() {
@@ -143,8 +143,8 @@ namespace Folding {
                     }
                 }
             }
-            Console.WriteLine(string.Format("N: {0}", cNeighbour));
-            Console.WriteLine(string.Format("O: {0}", cOverlapp));
+            //Console.WriteLine(string.Format("N: {0}", cNeighbour));
+            //Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
             return cNeighbour / ( cOverlapp + 1.0 );
         }
