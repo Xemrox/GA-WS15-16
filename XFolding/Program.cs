@@ -11,13 +11,11 @@ namespace Folding {
         public int Y { get; set; }
 
         public override int GetHashCode() {
-
             return ( X << 16 ) ^ Y;
         }
     }
 
     public class Program {
-
         public static readonly string SEQ20 = "10100110100101100101";
         public static readonly string SEQ24 = "110010010010010010010011";
         public static readonly string SEQ25 = "0010011000011000011000011";
@@ -25,13 +23,15 @@ namespace Folding {
         public static readonly string SEQ48 = "001001100110000011111111110000001100110010011111";
         public static readonly string SEQ50 = "11010101011110100010001000010001000101111010101011";
 
-
         public static readonly string SEQ01 = "01011001011010011010";
         public static readonly string FOL01 = "FRFRRLLRFRRLRLLRRFR";
         public static readonly string FS01 = "0F1R0F1R1R0L0L1R0F1R1R0L1R0L0L1R1R0F1R0";
 
-        public static readonly string SEQ02 = "1101101";
+        public static readonly string SEQ02 = "0001101";
         public static readonly string FOL02 = "FFLLLF";
+
+        public static readonly string SEQ03 = "0000000000111111";
+        public static readonly string FOL03 = "FFFFFFLLLRFFFFR";
 
         private static string MergeSeqAndFold(string Seq, string Fold) {
             StringBuilder merge = new StringBuilder();
@@ -51,34 +51,19 @@ namespace Folding {
             Console.WriteLine(nc.ToString());
             Console.WriteLine(FS01);*/
 
-            string chain = MergeSeqAndFold(SEQ01, FOL01);
-            NodeChain nc = SeqToNodes(chain);
+            Folding F1 = new Folding(FOL01);
+            Console.WriteLine(F1.CalculateFitness(SEQ01));
 
-            Console.WriteLine(CalculateFitness(ref nc));
+            Folding F2 = new Folding(FOL02);
+            Console.WriteLine(F2.CalculateFitness(SEQ02));
 
-            chain = MergeSeqAndFold(SEQ02, FOL02);
-            nc = SeqToNodes(chain);
-
-            Console.WriteLine(CalculateFitness(ref nc));
+            Folding F3 = new Folding(FOL03);
+            Console.WriteLine(F3.CalculateFitness(SEQ03));
 
             Console.ReadKey();
         }
 
-        static int[][][] OrientMapping = { 
-            /*X*/new int[][] {
-                                /*U L F  R*/
-                     new int[] {0, -1,  0,  1},    // Top
-                     new int[] {0,  0,  1,  0},    // Right
-                     new int[] {0,  1,  0, -1},    // Bottom
-                     new int[] {0,  0, -1,  0}     // Left
-            }, 
-            /*Y*/new int[][] {
-                     new int[] {0,  0,  1,  0},
-                     new int[] {0,  1,  0, -1},
-                     new int[] {0,  0, -1,  0},
-                     new int[] {0, -1,  0,  1}
-                 } };
-
+        /*
         public static double CalculateFitness(ref NodeChain nc) {
             int Orientation = 0;
 
@@ -86,7 +71,7 @@ namespace Folding {
 
             Point lastPoint = new Point() { X = 0, Y = 0 };
 
-            Point Min = new Point() { X = 0, Y = 0};
+            Point Min = new Point() { X = 0, Y = 0 };
             Point Max = new Point() { X = 0, Y = 0 };
 
             // Create Field
@@ -103,7 +88,7 @@ namespace Folding {
                 cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
 
                 List<Node> FieldElem;
-                if(!Field.TryGetValue(lastPoint.GetHashCode(), out FieldElem)) {
+                if (!Field.TryGetValue(lastPoint.GetHashCode(), out FieldElem)) {
                     Field[lastPoint.GetHashCode()] = new List<Node>();
                 } else {
                     //we got an overlapp!
@@ -121,7 +106,6 @@ namespace Folding {
                     neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int) dir];
                     List<Node> neighbours;
                     if (Field.TryGetValue(neighbour.GetHashCode(), out neighbours)) {
-                        
                         foreach (var n in neighbours) {
                             if (n.Type == Node.NodeType.Hydrophobic)
                                 cNeighbour++;
@@ -161,7 +145,7 @@ namespace Folding {
             Console.WriteLine(string.Format("N: {0}", cNeighbour));
             Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
-            return cNeighbour / (cOverlapp + 1.0);
+            return cNeighbour / ( cOverlapp + 1.0 );
         }
 
         /// <summary>
@@ -191,7 +175,6 @@ namespace Folding {
                 last = n;
             }
 
-
             Node final = new Node() {
                 Type = (Node.NodeType) Enum.Parse(typeof(Node.NodeType), seq.Last().ToString()),
                 Previous = last
@@ -206,6 +189,7 @@ namespace Folding {
     public class NodeChain {
         public Node First { get; set; }
         public Node Last { get; set; }
+
         public override string ToString() {
             StringBuilder sb = new StringBuilder();
 
@@ -219,6 +203,7 @@ namespace Folding {
             return sb.ToString();
         }
     }
+
     public class Node {
         public enum NodeDirection {
             U = 0,
@@ -257,7 +242,7 @@ namespace Folding {
             get; set;
         }
 
-        private static Dictionary<NodeDirection, List<NodeDirection>> NLists; 
+        private static Dictionary<NodeDirection, List<NodeDirection>> NLists;
 
         static Node() {
             NLists = new Dictionary<NodeDirection, List<NodeDirection>>();
@@ -273,11 +258,11 @@ namespace Folding {
 
         public string ToString(bool ShowUnknown = false) {
             string Dir = this.Direction.ToString();
-            return ( (int) this.Type ).ToString() + (!ShowUnknown ? ( Dir == "U" ? "" : Dir ) : Dir);
-        }
-        public override string ToString() {
-            return this.ToString(false);
+            return ( (int) this.Type ).ToString() + ( !ShowUnknown ? ( Dir == "U" ? "" : Dir ) : Dir );
         }
 
+        public override string ToString() {
+            return this.ToString(false);
+        }*/
     }
 }
