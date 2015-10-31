@@ -11,5 +11,12 @@ namespace Folding {
             return  r < 0 ? r + m : r;
         }
 
+        public static HashSet<K> ToHashSet<K,IN>(this IEnumerable<IN> data, Func<IN,K> keySelector) {
+            var ret = new HashSet<K>();
+            foreach(var d in data) {
+                ret.Add(keySelector.Invoke(d));
+            }
+            return ret;
+        }
     }
 }

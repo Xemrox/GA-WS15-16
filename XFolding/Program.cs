@@ -43,16 +43,24 @@ namespace Folding {
             Folding F3 = new Folding(FOL03);
             //Console.WriteLine(F3.CalculateFitness(SEQ03));
 
-            Population p = new Population(SEQ01, 50, 2000, .2);
-            p.Run();
+            Population p = new Population(SEQ01, 50, 500);
+            for (int i = 0; i < 50; i++) {
+                p.Run();
 
-            foreach (var d in p.Fitness) {
-                Console.WriteLine(d);
+                Console.WriteLine("------------");
+                var fMax = p.Fitness.Max();
+
+                Console.WriteLine("Min: {0} Max: {1} AVG: {2} E: {3}", p.Fitness.Min(), fMax, p.Fitness.Average(), (fMax -1000.0d) / 10.0d);
+
+                var maxFolds = Enumerable.Range(0, p.Fitness.Count()).Where(x => p.Fitness[x] == fMax).Select(x => p.Foldings[x]).ToHashSet(x => x.foldSeq);
+
+                foreach (var fold in maxFolds) {
+                    var f = new Folding(fold);
+                    f.print(SEQ01);
+                }
+
+                p.CurrentGeneration = 0;
             }
-            Console.WriteLine("------------");
-            Console.WriteLine(p.Fitness.Average());
-            Console.WriteLine(p.Fitness.Max());
-            Console.WriteLine(p.Fitness.Min());
 
             Console.ReadKey();
         }
