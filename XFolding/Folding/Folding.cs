@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using XGA.Config;
+using XGA.Helper;
 
-namespace Folding {
+namespace XGA.Folding {
 
-    public class Folding {
+    public class Folding : IFitnessMeasured<string> {
+        private string foldSeq;
 
-        private struct Point {
-            public int X { get; set; }
-            public int Y { get; set; }
-        }
-
-        public string foldSeq {
-            get; set;
+        string IFitnessMeasured<string>.BaseType {
+            get { return foldSeq; }
+            set { foldSeq = value; }
         }
 
         public Folding() {
@@ -27,7 +22,7 @@ namespace Folding {
 
         private static readonly int[][][] OrientMapping = {
             /*X*/new int[][] {
-                                /*U L F  R*/
+                              /*U   L   F   R*/
                      new int[] {0, -1,  0,  1},    // Top
                      new int[] {0,  0,  1,  0},    // Right
                      new int[] {0,  1,  0, -1},    // Bottom
@@ -40,29 +35,16 @@ namespace Folding {
                      new int[] {0, -1,  0,  1}
         } };
 
-        private static Dictionary<Direction, List<Direction>> NeighbourMap = new Dictionary<Direction, List<Direction>>();
-
-        static Folding() {
-            NeighbourMap.Add(Direction.F, new List<Direction> { Direction.L, Direction.R });
-            NeighbourMap.Add(Direction.L, new List<Direction> { Direction.F, Direction.R });
-            NeighbourMap.Add(Direction.R, new List<Direction> { Direction.F, Direction.L });
-            NeighbourMap.Add(Direction.U, new List<Direction> { Direction.L, Direction.F, Direction.R });
-        }
-
         public Folding(Folding folding) {
-            this.foldSeq = string.Copy(folding.foldSeq);
-        }
-
-        public static List<Direction> GetNeighbours(Direction from) {
-            return NeighbourMap[from];
+            foldSeq = string.Copy(folding.foldSeq);
         }
 
         private struct printhelper {
             public Direction dir { get; set; }
-            public PType type { get; set; }
+            public FoldType type { get; set; }
         }
 
-        public void print(string seq, StreamWriter Output) {
+        /*public void print(string seq, StreamWriter Output) {
             int Orientation = 0;
             var Field = new Dictionary<Point, List<printhelper>>();
             var lastPoint = new Point { X = 0, Y = 0 };
@@ -82,7 +64,7 @@ namespace Folding {
             // Create Field
             for (int i = 0; i < seqLength; i++) {
                 var currentDirection = (Direction) Enum.Parse(typeof(Direction), foldSeq[i].ToString());
-                var currentType = (PType) Enum.Parse(typeof(PType), seq[i].ToString());
+                var currentType = (FoldType) Enum.Parse(typeof(FoldType), seq[i].ToString());
 
                 var iDirection = (int) currentDirection;
 
@@ -105,7 +87,7 @@ namespace Folding {
                 Field[lastPoint].Add(new printhelper { type = currentType, dir = currentDirection });
 
                 //check neighbours
-                List<Direction> dirs = Folding.GetNeighbours(currentDirection);
+                List<Direction> dirs = currentDirection.GetNeighbours();
                 foreach (Direction dir in dirs) {
                     var neighbour = new Point();
                     neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int) dir];
@@ -113,7 +95,7 @@ namespace Folding {
                     //List<Node> neighbours;
                     //List<printhelper> elems;
                     if (Field.TryGetValue(neighbour, out elems)) {
-                        if (elems.Last().type == PType.Hydrophobic && currentType == PType.Hydrophobic) {
+                        if (elems.Last().type == FoldType.Hydrophobic && currentType == FoldType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
@@ -122,40 +104,6 @@ namespace Folding {
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
                 lastPoint = cP;
             }
-
-            /*{
-                var currentDirection = Direction.U; //Unknown e.g. LastElem
-                var currentType = (PType) Enum.Parse(typeof(PType), seq.Last().ToString());
-
-                var iDirection = (int) currentDirection;
-
-                var cP = new Point();
-                cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
-                cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
-
-                List<printhelper> elems;
-                if (!Field.TryGetValue(lastPoint, out elems)) {
-                    Field[lastPoint] = new List<printhelper>();
-                } else {
-                    cOverlapp++;
-                }
-                Field[lastPoint].Add(new printhelper { type = currentType, dir = currentDirection });
-
-                //check neighbours
-                List<Direction> dirs = Folding.GetNeighbours(currentDirection);
-                foreach (Direction dir in dirs) {
-                    var neighbour = new Point();
-                    neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int) dir];
-                    neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int) dir];
-                    //List<Node> neighbours;
-                    //List<printhelper> elems;
-                    if (Field.TryGetValue(neighbour, out elems)) {
-                        if (elems.Last().type == PType.Hydrophobic && currentType == PType.Hydrophobic) {
-                            cNeighbour++;
-                        }
-                    }
-                }
-            }*/
 
             for (int y = MaxP.Y + 1; y >= MinP.Y - 1; y--) {
                 for (int x = MinP.X - 1; x <= MaxP.X + 1; x++) {
@@ -204,7 +152,7 @@ namespace Folding {
             // Create Field
             for (int i = 0; i < seqLength; i++) {
                 var currentDirection = (Direction) Enum.Parse(typeof(Direction), foldSeq[i].ToString());
-                var currentType = (PType) Enum.Parse(typeof(PType), seq[i].ToString());
+                var currentType = (FoldType) Enum.Parse(typeof(FoldType), seq[i].ToString());
 
                 var iDirection = (int) currentDirection;
 
@@ -218,13 +166,13 @@ namespace Folding {
                     cOverlapp++;
 
                     //hydrophil wins
-                    Field[lastPoint] = bUsedByHydrophobic && currentType == PType.Hydrophobic;
+                    Field[lastPoint] = bUsedByHydrophobic && currentType == FoldType.Hydrophobic;
                 } else {
-                    Field[lastPoint] = currentType == PType.Hydrophobic;
+                    Field[lastPoint] = currentType == FoldType.Hydrophobic;
                 }
 
                 //check neighbours
-                List<Direction> dirs = Folding.GetNeighbours(currentDirection);
+                List<Direction> dirs = currentDirection.GetNeighbours();
                 foreach (Direction dir in dirs) {
                     var neighbour = new Point();
                     neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int) dir];
@@ -232,7 +180,7 @@ namespace Folding {
                     //List<Node> neighbours;
                     bool bIsNeighbourHydrophobic = true;
                     if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                        if (bIsNeighbourHydrophobic && currentType == PType.Hydrophobic) {
+                        if (bIsNeighbourHydrophobic && currentType == FoldType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
@@ -241,49 +189,31 @@ namespace Folding {
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
                 lastPoint = cP;
             }
-            //check last elem
-            /*{
-                var currentDirection = Direction.U; //Unknown e.g. LastElem
-                var currentType = (PType) Enum.Parse(typeof(PType), seq.Last().ToString());
-
-                var iDirection = (int) currentDirection;
-
-                var cP = new Point();
-                cP.X = lastPoint.X + OrientMapping[0][Orientation][iDirection];
-                cP.Y = lastPoint.Y + OrientMapping[1][Orientation][iDirection];
-
-                bool bUsedByHydrophobic = true;
-                if (Field.TryGetValue(lastPoint, out bUsedByHydrophobic)) {
-                    //overlapp
-                    cOverlapp++;
-                }
-                //hydrophil wins
-                Field[lastPoint] = bUsedByHydrophobic && currentType == PType.Hydrophobic;
-
-                //check neighbours
-                List<Direction> dirs = Folding.GetNeighbours(currentDirection);
-                foreach (Direction dir in dirs) {
-                    var neighbour = new Point();
-                    neighbour.X = lastPoint.X + OrientMapping[0][Orientation][(int) dir];
-                    neighbour.Y = lastPoint.Y + OrientMapping[1][Orientation][(int) dir];
-                    //List<Node> neighbours;
-                    bool bIsNeighbourHydrophobic = true;
-                    if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                        if (bIsNeighbourHydrophobic && currentType == PType.Hydrophobic) {
-                            cNeighbour++;
-                        }
-                    }
-                }
-            }*/
-            //Console.WriteLine(string.Format("N: {0}", cNeighbour));
-            //Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
             var dBase = 1000.0;
             if (cOverlapp > 0) {
                 return ( dBase / ( ( cOverlapp + 1 ) * 3 ) ) + cNeighbour;
             }
             return dBase + cNeighbour * 100;
-            //return cNeighbour / ( cOverlapp + 1.0 );
+        }
+        */
+
+        double IFitnessMeasured<string>.CalculateFitness(string reference) {
+            throw new NotImplementedException();
+        }
+
+        void IFitnessMeasured<string>.print(string reference, Logger log) {
+            throw new NotImplementedException();
+        }
+
+        string IFitnessMeasured<string>.GenerateRandom(int length) {
+            char[] ALP = { 'L', 'F', 'R' };
+
+            var sb = new StringBuilder();
+            for (int l = 0; l < length; l++) {
+                sb.Append(ALP[RandomHelper.GetNextInteger(2)]);
+            }
+            return sb.ToString();
         }
     }
 }

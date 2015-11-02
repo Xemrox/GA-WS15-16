@@ -7,8 +7,8 @@
     <ProjectGuid>{8A621225-8BD8-4050-81C0-8DEC2BD360F3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Folding</RootNamespace>
-    <AssemblyName>Folding</AssemblyName>
+    <RootNamespace>XGA</RootNamespace>
+    <AssemblyName>XGA</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,13 +43,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Direction.cs" />
-    <Compile Include="Ext.cs" />
-    <Compile Include="Folding.cs" />
-    <Compile Include="Population.cs" />
+    <Compile Include="Config\CalculationMode.cs" />
+    <Compile Include="Config\IGeneticOperator.cs" />
+    <Compile Include="Config\IGeneticOperatorProvider.cs" />
+    <Compile Include="Config\Direction.cs" />
+    <Compile Include="Folding\FoldingDefaultOperatorProvider.cs" />
+    <Compile Include="Folding\FoldingOperators.cs" />
+    <Compile Include="Folding\FoldingWorkingSet.cs" />
+    <Compile Include="Folding\Point.cs" />
+    <Compile Include="Helper\Ext.cs" />
+    <Compile Include="Config\IFitnessMeasured.cs" />
+    <Compile Include="Folding\Folding.cs" />
+    <Compile Include="Config\GeneticAlgorithmConfig.cs" />
+    <Compile Include="GeneticAlgorithm.cs" />
+    <Compile Include="Helper\GenericGeneticOperatorProvider.cs" />
+    <Compile Include="Helper\Logger.cs" />
+    <Compile Include="Helper\WorkingSet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PType.cs" />
+    <Compile Include="Folding\FoldType.cs" />
+    <Compile Include="Helper\RandomHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

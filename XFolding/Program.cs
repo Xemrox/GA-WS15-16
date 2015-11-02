@@ -1,21 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using XGA.Config;
+using XGA.Folding;
+using XGA.Helper;
 
-namespace Folding {
-
-    public class Point {
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public override int GetHashCode() {
-            return ( X << 16 ) ^ Y;
-        }
-    }
+namespace XGA {
 
     public class Program {
         public static readonly string SEQ20 = "10100110100101100101";
@@ -28,7 +19,6 @@ namespace Folding {
 
         public static readonly string SEQ01 = "01011001011010011010"; //9
         public static readonly string FOL01 = "FRFRRLLRFRRLRLLRRFR";
-        public static readonly string FS01 = "0F1R0F1R1R0L0L1R0F1R1R0L1R0L0L1R1R0F1R0";
 
         public static readonly string SEQ02 = "0001101";
         public static readonly string FOL02 = "FFLLLF";
@@ -36,26 +26,25 @@ namespace Folding {
         public static readonly string SEQ03 = "0000000000111111";
         public static readonly string FOL03 = "FFFFFFLLLRFFFFR";
 
-        public static volatile bool bFinished = false;
-
-        //public static Population p = new Population(SEQ01, 200, 1000);
-        //public static HashSet<string> maxFoldings = new HashSet<string>();
-        //public static Mutex mut = new Mutex();
-
-        private class WorkingSet {
+        /*private class WorkingSet<T> where T : CalculationMode {
             public string Name { get; set; }
-            public Population Population { get; set; }
+
+            //public GeneticAlgorithm Population { get; set; }
             public double maxFitness { get; set; }
+
             public HashSet<string> maxFoldings { get; private set; }
             public Mutex StopMutex { get; private set; }
             public ManualResetEvent Finished { get; private set; }
             public StreamWriter Output { get; private set; }
+            public Action<string> Log { get; private set; }
+            public CalculationMode CalcMode { get; private set; }
 
-            public WorkingSet(string Name, Population p, StreamWriter Output) {
+            public WorkingSet(string Name, T cm) {
                 this.Name = Name;
+                this.CalcMode = cm;
                 this.Population = p;
                 this.Output = Output;
-                this.Population.Output = Output;
+                this.Population.Output = new StreamWriter(Name + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
                 this.maxFitness = 0.0;
                 this.StopMutex = new Mutex(false);
                 this.maxFoldings = new HashSet<string>();
@@ -63,7 +52,7 @@ namespace Folding {
             }
 
             public void Run(object Context) {
-                while (this.Population.LeftGenerations > 0) {
+                /*while (this.Population.LeftGenerations > 0) {
                     this.StopMutex.WaitOne();
 
                     this.Population.GenerationStep();
@@ -94,8 +83,14 @@ namespace Folding {
                 this.Output.Close();
 
                 this.Finished.Set();
-            }
+            }*/
+        /*
+    CalcMode.Run(this.Population, this.Evaluate);
         }
+
+private void Evaluate(GeneticAlgorithm p) {
+}
+}*/
 
         public static void Main(string[] args) {
             Console.Title = "GA-2D-HP Modell";
@@ -129,23 +124,46 @@ namespace Folding {
                 mut.ReleaseMutex();*/
             };
 
-            Folding f = new Folding(FOL01);
+            /*Folding f = new Folding(FOL01);
             var s = new StreamWriter("test.txt");
             f.print(SEQ01, s);
             s.Flush();
-            s.Close();
+            s.Close();*/
 
-            var WS = new List<WorkingSet>();
-            WS.Add(new WorkingSet("SEQ01", new Population(SEQ01, 200, 10000, 0.20, 0.30), new StreamWriter("SEQ01-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            WS.Add(new WorkingSet("SEQ50", new Population(SEQ50, 200, 10000, 0.10, 0.30), new StreamWriter("SEQ50-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            WS.Add(new WorkingSet("SEQ48", new Population(SEQ48, 200, 10000, 0.40, 0.45), new StreamWriter("SEQ48-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            WS.Add(new WorkingSet("SEQ64", new Population(SEQ64, 200, 10000, 0.30, 0.45), new StreamWriter("SEQ64-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
+            /*var x = new FoldingWorkingSet<CalculationMode<Folding.Folding, string>>("SEQ01",
+                new GeneticAlgorithmConfig() { Sequence = SEQ01 },
+                (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));*/
+
+            ///TODO
+            /// Add Logger
+            /// move Algorithm operations
+
+            var x = new FoldingWorkingSet<CalculationMode<Folding.Folding, string>>("SEQ01",
+                new GeneticAlgorithmConfig() { Sequence = SEQ01 },
+                new GenericGeneticOperatorProvider<Folding.Folding, string>(() =>
+                {
+                    return new List<IGeneticOperator<Folding.Folding, string>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));
+
+            List<FoldingWorkingSet<CalculationMode<Folding.Folding, string>>> WS = new List<FoldingWorkingSet<CalculationMode<Folding.Folding, string>>>();
+
+            WS.Add(x);
+
+            //WS.Add(new WorkingSet("SEQ01", new Population(SEQ01, 200, 10000, 0.20, 0.30), new StreamWriter("SEQ01-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
+            //WS.Add(new WorkingSet("SEQ50", new Population(SEQ50, 200, 10000, 0.10, 0.30), new StreamWriter("SEQ50-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
+            //WS.Add(new WorkingSet("SEQ48", new Population(SEQ48, 200, 10000, 0.40, 0.45), new StreamWriter("SEQ48-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
+            //WS.Add(new WorkingSet("SEQ64", new Population(SEQ64, 200, 10000, 0.30, 0.45), new StreamWriter("SEQ64-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
 
             foreach (var ws in WS) {
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
-            WaitHandle.WaitAll(WS.Select(x => x.Finished).ToArray());
+            WaitHandle.WaitAll(WS.Select(y => y.Finished).ToArray());
 
             Console.WriteLine("Finished");
 
