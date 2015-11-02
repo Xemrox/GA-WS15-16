@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
+
 namespace Folding {
 
     public static class RNG {
@@ -19,8 +21,6 @@ namespace Folding {
             var ul = BitConverter.ToUInt64(bytes, 0) / ( 1 << 11 );
             return ul / (double) ( 1UL << 53 );
         }
-
-       
     }
 
     public class Population {
@@ -73,6 +73,7 @@ namespace Folding {
         }
 
         public string Sequence { get; private set; }
+        public StreamWriter Output { get; set; }
 
         public Population(string SEQ, int Elems = 100, int Generations = 50, double MutationRate = 0.01, double CrossoverRate = 0.25) {
             this.Size = Elems;
@@ -105,29 +106,9 @@ namespace Folding {
         public void GenerationStep() {
             if (LeftGenerations <= 0) return;
 
-            //Debugger.Log(0,"inf", Cache.GroupBy(x=> x.Folding.foldSeq).Count().ToString()+'\n');
             this.Select();
 
-            for (var index = 0; index < Cache.Length; index++) {
-                var c = Cache[index];
-                if (c.Fitness != c.Folding.CalculateFitness(this.Sequence)) {
-                    //cache integrity failed
-                    Console.WriteLine("Cache integrity failed for: {0}", index);
-                }
-            }
-
-
             this.CrossOver();
-            var count = 0;
-            for (var index = 0; index < Cache.Length; index++) {
-                var c = Cache[index];
-                if (c.Fitness != c.Folding.CalculateFitness(this.Sequence)) {
-                    //cache integrity failed
-                    Console.WriteLine("Cache integrity failed for: {0} {1}-{2}", index, c.Fitness, c.Folding.CalculateFitness(this.Sequence));
-                    count++;
-                }
-            }
-            //Console.WriteLine(count);
 
             this.Mutate();
 
@@ -165,8 +146,7 @@ namespace Folding {
                 }*/
 
                 iIndex = -( Array.BinarySearch(selAreas, index) + 1 );
-                /*Console.WriteLine(iIndex);
-                Console.WriteLine("----");*/
+
                 var nEntry = new CacheFold {
                     Fitness = Cache[iIndex].Fitness,
                     Folding = new Folding(Cache[iIndex].Folding)
@@ -190,18 +170,14 @@ namespace Folding {
                 iHits--;
             }
 
-            //Console.WriteLine(iHits);
-
             for (int i = 0; i < iHits; i += 2) {
                 var index1 = (int) Math.Floor(RNG.GetNext() * ( Size - 1 ));
                 var index2 = (int) Math.Floor(RNG.GetNext() * ( Size - 1 ));
 
-                //Console.WriteLine("{0}-{1}",index1, index2);
-                
                 var f1 = Cache[index1].Folding;
                 var f2 = Cache[index2].Folding;
 
-                var cutIndex = (int) Math.Floor(RNG.GetNext() * ( f1.foldSeq.Length - 2 ))+1;
+                var cutIndex = (int) Math.Floor(RNG.GetNext() * ( f1.foldSeq.Length - 2 )) + 1;
                 var left1 = f2.foldSeq.ToCharArray(0, cutIndex);
                 var left2 = f1.foldSeq.ToCharArray(0, cutIndex);
 
@@ -215,15 +191,6 @@ namespace Folding {
 
                 Cache[index2].Folding = new Folding(f2);
                 Cache[index2].Fitness = f2.CalculateFitness(this.Sequence);
-
-                /*var f = Cache[iIndex].Folding;
-
-                var fIndex = (int) Math.Floor(RNG.GetNext() * ( f.foldSeq.Length - 1 ));
-                var foldChars = f.foldSeq.ToCharArray();
-                foldChars[fIndex] = MutationTable[foldChars[fIndex]][(int) Math.Round(RNG.GetNext())];
-                f.foldSeq = new string(foldChars);
-
-                Cache[iIndex].Fitness = f.CalculateFitness(this.Sequence);*/
             }
         }
 
@@ -253,13 +220,10 @@ namespace Folding {
                 f.foldSeq = new string(foldChars);
 
                 Cache[iIndex] = new CacheFold {
-                    Folding = new Folding(f),
+                    Folding = f,
                     Fitness = f.CalculateFitness(this.Sequence)
                 };
-                //Console.WriteLine("Replaced: {0}", iIndex);
             }
-
-            //Console.WriteLine("Mutation {0}", iHits);
         }
     }
 }

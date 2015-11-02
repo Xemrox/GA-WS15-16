@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,7 +62,7 @@ namespace Folding {
             public PType type { get; set; }
         }
 
-        public void print(string seq) {
+        public void print(string seq, StreamWriter Output) {
             int Orientation = 0;
             var Field = new Dictionary<Point, List<printhelper>>();
             var lastPoint = new Point { X = 0, Y = 0 };
@@ -69,8 +70,9 @@ namespace Folding {
             double cNeighbour = 0;
             double cOverlapp = 0;
 
-            int seqLength = seq.Length - 1;
-            if (seqLength != this.foldSeq.Length) {
+            int seqLength = seq.Length;
+            var foldSeq = this.foldSeq + "U";
+            if (seqLength != foldSeq.Length) {
                 throw new Exception("Sequenzelengths do not match");
             }
 
@@ -79,7 +81,7 @@ namespace Folding {
 
             // Create Field
             for (int i = 0; i < seqLength; i++) {
-                var currentDirection = (Direction) Enum.Parse(typeof(Direction), this.foldSeq[i].ToString());
+                var currentDirection = (Direction) Enum.Parse(typeof(Direction), foldSeq[i].ToString());
                 var currentType = (PType) Enum.Parse(typeof(PType), seq[i].ToString());
 
                 var iDirection = (int) currentDirection;
@@ -111,18 +113,17 @@ namespace Folding {
                     //List<Node> neighbours;
                     //List<printhelper> elems;
                     if (Field.TryGetValue(neighbour, out elems)) {
-                        if(elems.Last().type == PType.Hydrophobic) {
+                        if (elems.Last().type == PType.Hydrophobic && currentType == PType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
                 }
 
-
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
                 lastPoint = cP;
             }
 
-            {
+            /*{
                 var currentDirection = Direction.U; //Unknown e.g. LastElem
                 var currentType = (PType) Enum.Parse(typeof(PType), seq.Last().ToString());
 
@@ -149,43 +150,40 @@ namespace Folding {
                     //List<Node> neighbours;
                     //List<printhelper> elems;
                     if (Field.TryGetValue(neighbour, out elems)) {
-                        if (elems.Last().type == PType.Hydrophobic) {
+                        if (elems.Last().type == PType.Hydrophobic && currentType == PType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
                 }
-            }
+            }*/
 
-
-            for (int y = MinP.Y - 1; y <= MaxP.Y + 1; y++) {
+            for (int y = MaxP.Y + 1; y >= MinP.Y - 1; y--) {
                 for (int x = MinP.X - 1; x <= MaxP.X + 1; x++) {
                     var cP = new Point { X = x, Y = y };
 
                     List<printhelper> elems;
                     if (Field.TryGetValue(cP, out elems)) {
                         var last = elems.Last();
-                        if (elems.Count > 1) { 
-                            Console.Write(" X{0}{1}", last.type.Print(), last.dir.ToString(true));
+                        if (elems.Count > 1) {
+                            Output.Write(" X{0}{1}", last.type.Print(), last.dir.ToString(true));
                             var fitness = this.CalculateFitness(seq);
-
                         } else {
-                            
-                            Console.Write("  {0}{1}", last.type.Print(), last.dir.ToString(true));
+                            Output.Write("  {0}{1}", last.type.Print(), last.dir.ToString(true));
                         }
                     } else {
-                        Console.Write("  - ");
+                        Output.Write("  - ");
                     }
                 }
-                Console.WriteLine();
+                Output.WriteLine();
             }
             var dBase = 1000.0;
             var Fitness = 0.0;
             if (cOverlapp > 0) {
                 Fitness = ( dBase / ( ( cOverlapp + 1 ) * 3 ) ) + cNeighbour;
             } else {
-                Fitness = dBase + cNeighbour * 10;
+                Fitness = dBase + cNeighbour * 100;
             }
-            Console.WriteLine("N: {0} O: {1} F: {2}", cNeighbour, cOverlapp, Fitness);
+            Output.WriteLine("N: {0} O: {1} F: {2} S: {3}", cNeighbour, cOverlapp, Fitness, foldSeq);
         }
 
         public double CalculateFitness(string seq) {
@@ -198,13 +196,14 @@ namespace Folding {
             double cNeighbour = 0;
             double cOverlapp = 0;
 
-            int seqLength = seq.Length - 1;
-            if (seqLength != this.foldSeq.Length) {
+            int seqLength = seq.Length;
+            var foldSeq = this.foldSeq + "U";
+            if (seqLength != foldSeq.Length) {
                 throw new Exception("Sequenzelengths do not match");
             }
             // Create Field
             for (int i = 0; i < seqLength; i++) {
-                var currentDirection = (Direction) Enum.Parse(typeof(Direction), this.foldSeq[i].ToString());
+                var currentDirection = (Direction) Enum.Parse(typeof(Direction), foldSeq[i].ToString());
                 var currentType = (PType) Enum.Parse(typeof(PType), seq[i].ToString());
 
                 var iDirection = (int) currentDirection;
@@ -233,7 +232,7 @@ namespace Folding {
                     //List<Node> neighbours;
                     bool bIsNeighbourHydrophobic = true;
                     if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                        if (bIsNeighbourHydrophobic) {
+                        if (bIsNeighbourHydrophobic && currentType == PType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
@@ -243,7 +242,7 @@ namespace Folding {
                 lastPoint = cP;
             }
             //check last elem
-            {
+            /*{
                 var currentDirection = Direction.U; //Unknown e.g. LastElem
                 var currentType = (PType) Enum.Parse(typeof(PType), seq.Last().ToString());
 
@@ -270,12 +269,12 @@ namespace Folding {
                     //List<Node> neighbours;
                     bool bIsNeighbourHydrophobic = true;
                     if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                        if (bIsNeighbourHydrophobic) {
+                        if (bIsNeighbourHydrophobic && currentType == PType.Hydrophobic) {
                             cNeighbour++;
                         }
                     }
                 }
-            }
+            }*/
             //Console.WriteLine(string.Format("N: {0}", cNeighbour));
             //Console.WriteLine(string.Format("O: {0}", cOverlapp));
 
@@ -283,7 +282,7 @@ namespace Folding {
             if (cOverlapp > 0) {
                 return ( dBase / ( ( cOverlapp + 1 ) * 3 ) ) + cNeighbour;
             }
-            return dBase + cNeighbour * 10;
+            return dBase + cNeighbour * 100;
             //return cNeighbour / ( cOverlapp + 1.0 );
         }
     }
