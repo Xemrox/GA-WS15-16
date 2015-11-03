@@ -10,7 +10,7 @@ namespace XGA {
     }
 
     public static class DirectionExt {
-        private static Dictionary<Direction, List<Direction>> NeighbourMap = new Dictionary<Direction, List<Direction>>();
+        private static readonly Dictionary<Direction, List<Direction>> NeighbourMap = new Dictionary<Direction, List<Direction>>();
 
         static DirectionExt() {
             NeighbourMap.Add(Direction.F, new List<Direction> { Direction.L, Direction.R });

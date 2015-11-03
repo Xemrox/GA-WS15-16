@@ -7,7 +7,7 @@ namespace XGA.Helper {
 
     public sealed class Logger {
         private bool m_finished = false;
-        private StreamWriter m_target;
+        private readonly StreamWriter m_target;
         private HashSet<string> m_enabledLvl = new HashSet<string>();
 
         public Logger(string target) {

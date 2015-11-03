@@ -4,16 +4,17 @@ using XGA.Helper;
 
 namespace XGA.Folding {
 
-    public class FoldingWorkingSet<C> : WorkingSet<Folding, string, C>
-        where C : ICalculationMode<Folding, string> {
+    public class FoldingWorkingSet : WorkingSet<Folding, string, CalculationMode<Folding, string>>
+        /*where C : ICalculationMode<Folding, string>*/ {
 
-        public FoldingWorkingSet(string Name, GeneticAlgorithmConfig GAC, Func<GeneticAlgorithm<Folding, string>, C> CM) : base(Name, GAC, new FoldingDefaultOperatorProvider(), CM) {
+        public FoldingWorkingSet(string Name, GeneticAlgorithmConfig GAC, Func<GeneticAlgorithm<Folding, string>, CalculationMode<Folding, string>> CM) :
+            base(Name, GAC, new FoldingDefaultOperatorProvider(), CM) {
         }
 
         public FoldingWorkingSet(string Name,
             GeneticAlgorithmConfig GAC,
             IGeneticOperatorProvider<Folding, string> Provider,
-            Func<GeneticAlgorithm<Folding, string>, C> CM) :
+            Func<GeneticAlgorithm<Folding, string>, CalculationMode<Folding, string>> CM) :
             base(Name, GAC, Provider, CM) {
         }
 

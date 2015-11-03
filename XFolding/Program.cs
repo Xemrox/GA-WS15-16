@@ -138,8 +138,8 @@ private void Evaluate(GeneticAlgorithm p) {
             /// Add Logger
             /// move Algorithm operations
 
-            var x = new FoldingWorkingSet<CalculationMode<Folding.Folding, string>>("SEQ01",
-                new GeneticAlgorithmConfig() { Sequence = SEQ01 },
+            var x = new FoldingWorkingSet("SEQ01",
+                new GeneticAlgorithmConfig { Sequence = SEQ01 },
                 new GenericGeneticOperatorProvider<Folding.Folding, string>(() =>
                 {
                     return new List<IGeneticOperator<Folding.Folding, string>> {
@@ -150,7 +150,7 @@ private void Evaluate(GeneticAlgorithm p) {
                 }),
                 (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));
 
-            List<FoldingWorkingSet<CalculationMode<Folding.Folding, string>>> WS = new List<FoldingWorkingSet<CalculationMode<Folding.Folding, string>>>();
+            var WS = new List<FoldingWorkingSet>();
 
             WS.Add(x);
 

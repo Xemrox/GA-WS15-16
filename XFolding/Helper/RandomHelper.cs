@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace XGA {
 
-    public class RandomHelper {
+    public static class RandomHelper {
 
         // Step 1: fill an array with 8 random bytes
         private static RNGCryptoServiceProvider gen = new RNGCryptoServiceProvider();

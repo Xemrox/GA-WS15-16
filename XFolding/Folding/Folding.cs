@@ -8,9 +8,10 @@ namespace XGA.Folding {
     public class Folding : IFitnessMeasured<string> {
         private string foldSeq;
 
-        string IFitnessMeasured<string>.BaseType {
-            get { return foldSeq; }
-            set { foldSeq = value; }
+        public string BaseType {
+            /*get { return foldSeq; }
+            set { foldSeq = value; }*/
+            get; set;
         }
 
         public Folding() {
@@ -198,15 +199,15 @@ namespace XGA.Folding {
         }
         */
 
-        double IFitnessMeasured<string>.CalculateFitness(string reference) {
+        public double CalculateFitness(string reference) {
             throw new NotImplementedException();
         }
 
-        void IFitnessMeasured<string>.print(string reference, Logger log) {
+        public void print(string reference, Logger log) {
             throw new NotImplementedException();
         }
 
-        string IFitnessMeasured<string>.GenerateRandom(int length) {
+        public string GenerateRandom(int length) {
             char[] ALP = { 'L', 'F', 'R' };
 
             var sb = new StringBuilder();

@@ -15,7 +15,7 @@ namespace XGA.Config {
     public abstract class CalculationMode<T, S> : ICalculationMode<T, S>
         where T : IFitnessMeasured<S>, new() {
 
-        public CalculationMode(GeneticAlgorithm<T, S> GA) {
+        protected CalculationMode(GeneticAlgorithm<T, S> GA) {
             this.GA = GA;
         }
 

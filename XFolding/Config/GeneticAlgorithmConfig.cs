@@ -8,8 +8,8 @@
 
         public GeneticAlgorithmConfig() {
             this.PopulationSize = 100;
-            this.MutationRate = 0.01;
-            this.CrossoverRate = 0.25;
+            this.MutationRate = 0.01d;
+            this.CrossoverRate = 0.25d;
             this.Sequence = "";
         }
     }

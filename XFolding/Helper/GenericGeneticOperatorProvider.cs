@@ -6,7 +6,7 @@ namespace XGA.Helper {
 
     public class GenericGeneticOperatorProvider<T, S> : IGeneticOperatorProvider<T, S>
         where T : IFitnessMeasured<S>, new() {
-        private Func<IEnumerable<IGeneticOperator<T, S>>> Wrapper;
+        private readonly Func<IEnumerable<IGeneticOperator<T, S>>> Wrapper;
 
         public GenericGeneticOperatorProvider(Func<IEnumerable<IGeneticOperator<T, S>>> Wrapper) {
             this.Wrapper = Wrapper;
