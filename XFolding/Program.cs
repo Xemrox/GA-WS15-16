@@ -9,6 +9,12 @@ using XGA.Helper;
 namespace XGA {
 
     public class Program {
+        // benchmark sequences for the 2d HP model
+        // 0 = hydrophil, "white"
+        // 1 = hydrophob, "black"
+        // source: Ron Unger, John Moult: Genetic Algorithms for Protein Folding Simulations,
+        //         Journal of Molecular Biology, Vol. 231, No. 1, May 1993
+
         public static readonly string SEQ20 = "10100110100101100101";
         public static readonly string SEQ24 = "110010010010010010010011";   //12
         public static readonly string SEQ25 = "0010011000011000011000011";  //12?
@@ -17,7 +23,7 @@ namespace XGA {
         public static readonly string SEQ50 = "11010101011110100010001000010001000101111010101011";
         public static readonly string SEQ64 = "1111111111110101001100110010011001100100110011001010111111111111";
 
-        public static readonly string SEQ01 = "01011001011010011010"; //9
+        public static readonly string SEQ01 = "10100110100101100101"; //9
         public static readonly string FOL01 = "FRFRRLLRFRRLRLLRRFR";
 
         public static readonly string SEQ02 = "0001101";
@@ -124,11 +130,15 @@ private void Evaluate(GeneticAlgorithm p) {
                 mut.ReleaseMutex();*/
             };
 
-            /*Folding f = new Folding(FOL01);
-            var s = new StreamWriter("test.txt");
-            f.print(SEQ01, s);
-            s.Flush();
-            s.Close();*/
+            var f = new Folding.Folding();
+            f.BaseType = FOL01.ToCharArray();
+            var F = f.CalculateFitness(SEQ01.ToCharArray());
+            Console.WriteLine(Folding.Folding.Neighbours(F));
+
+            //var s = new StreamWriter("test.txt");
+            //f.print(SEQ01, s);
+            //s.Flush();
+            //s.Close();
 
             /*var x = new FoldingWorkingSet<CalculationMode<Folding.Folding, string>>("SEQ01",
                 new GeneticAlgorithmConfig() { Sequence = SEQ01 },
@@ -139,16 +149,16 @@ private void Evaluate(GeneticAlgorithm p) {
             /// move Algorithm operations
 
             var x = new FoldingWorkingSet("SEQ01",
-                new GeneticAlgorithmConfig { Sequence = SEQ01 },
-                new GenericGeneticOperatorProvider<Folding.Folding, string>(() =>
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000 },
+                new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
                 {
-                    return new List<IGeneticOperator<Folding.Folding, string>> {
+                    return new List<IGeneticOperator<Folding.Folding, char>> {
                     new FoldingSelectOperator(),
                     new FoldingMutateOperator(),
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 500));
 
             var WS = new List<FoldingWorkingSet>();
 
@@ -160,10 +170,29 @@ private void Evaluate(GeneticAlgorithm p) {
             //WS.Add(new WorkingSet("SEQ64", new Population(SEQ64, 200, 10000, 0.30, 0.45), new StreamWriter("SEQ64-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
 
             foreach (var ws in WS) {
+                Console.WriteLine("Started: {0}", ws.Name);
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
+            /*Random rnd = new Random(42);
+            var nums = new double[100];
+            for (int i = 0; i < 100; i++) {
+                nums[i] = rnd.NextDouble();
+            }
+
+            var total = nums.Sum();
+            var rel = nums.Select(d => d / total).ToArray();
+            var cumulatives = new double[100];
+            var cumulative = 0.0d;
+
+            for (int i = 0; i < 100; i++) {
+                cumulatives[i] = cumulative + rel[i];
+                cumulative += rel[i];
+            }*/
+
             WaitHandle.WaitAll(WS.Select(y => y.Finished).ToArray());
+
+            //Console.WriteLine("{0}", Math.Log(1 - 0.5) / -( 0.10 * 1000 ));
 
             Console.WriteLine("Finished");
 

@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using XGA.Config;
 using XGA.Helper;
 
 namespace XGA.Folding {
 
-    public class Folding : IFitnessMeasured<string> {
-        private string foldSeq;
+    public class Folding : IFitnessMeasured<char> {
 
-        public string BaseType {
-            /*get { return foldSeq; }
-            set { foldSeq = value; }*/
+        public char[] BaseType {
             get; set;
         }
 
         public Folding() {
-        }
-
-        public Folding(string foldSeq) {
-            this.foldSeq = foldSeq;
         }
 
         private static readonly int[][][] OrientMapping = {
@@ -37,7 +31,13 @@ namespace XGA.Folding {
         } };
 
         public Folding(Folding folding) {
-            foldSeq = string.Copy(folding.foldSeq);
+            this.BaseType = new char[folding.BaseType.Length];
+            Buffer.BlockCopy(folding.BaseType, 0, this.BaseType, 0, folding.BaseType.Length * sizeof(char));
+            /*for (int i = 0; i < this.BaseType.Length; i++) {
+                this.BaseType[i] = folding.BaseType[i];
+            }*/
+            //this.BaseType = new char[folding.BaseType.Length];
+            //Array.Copy(folding.BaseType, this.BaseType, folding.BaseType.Length);
         }
 
         private struct printhelper {
@@ -199,22 +199,117 @@ namespace XGA.Folding {
         }
         */
 
-        public double CalculateFitness(string reference) {
-            throw new NotImplementedException();
+        private static Dictionary<char, Direction> cD = new Dictionary<char, Direction>();
+        private static Dictionary<char, FoldType> cT = new Dictionary<char, FoldType>();
+
+        static Folding() {
+            cD.Add('L', Direction.L);
+            cD.Add('F', Direction.F);
+            cD.Add('R', Direction.R);
+            cD.Add('U', Direction.U);
+
+            // 0 = hydrophil, "white"
+            // 1 = hydrophob, "black"
+            cT.Add('0', FoldType.Hydrophilic);
+            cT.Add('1', FoldType.Hydrophobic);
         }
 
-        public void print(string reference, Logger log) {
-            throw new NotImplementedException();
-        }
+        public double CalculateFitness(char[] reference) {
+            int Orientation = 0;
+            var Field = new Dictionary<Point, bool>();
+            var currentPoint = new Point { X = 0, Y = 0 };
 
-        public string GenerateRandom(int length) {
-            char[] ALP = { 'L', 'F', 'R' };
+            double cNeighbour = 0;
+            double cOverlapp = 0;
 
-            var sb = new StringBuilder();
-            for (int l = 0; l < length; l++) {
-                sb.Append(ALP[RandomHelper.GetNextInteger(2)]);
+            int seqLength = this.BaseType.Length;
+            if (seqLength != reference.Length - 1) {
+                throw new Exception("Sequenzelengths do not match");
             }
-            return sb.ToString();
+            // Create Field
+            for (int i = 0; i < reference.Length; i++) {
+                Direction currentDirection;
+                if (i == reference.Length - 1) {
+                    currentDirection = Direction.U;
+                } else {
+                    currentDirection = cD[this.BaseType[i]];
+                }
+                var currentType = cT[reference[i]];
+
+                var iDirection = (int) currentDirection;
+
+                bool bUsedByHydrophobic = true;
+                if (Field.TryGetValue(currentPoint, out bUsedByHydrophobic)) {
+                    //overlapp
+                    cOverlapp++;
+
+                    //hydrophil wins
+                    Field[currentPoint] = bUsedByHydrophobic && currentType == FoldType.Hydrophobic;
+                } else {
+                    Field[currentPoint] = currentType == FoldType.Hydrophobic;
+                }
+
+                //check neighbours
+                List<Direction> dirs = currentDirection.GetNeighbours();
+                foreach (Direction dir in dirs) {
+                    var neighbour = new Point();
+                    neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
+                    neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
+
+                    bool bIsNeighbourHydrophobic = true;
+                    if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
+                        if (bIsNeighbourHydrophobic && currentType == FoldType.Hydrophobic) {
+                            cNeighbour++;
+                        }
+                    }
+                }
+
+                currentPoint.X += OrientMapping[0][Orientation][iDirection];
+                currentPoint.Y += OrientMapping[1][Orientation][iDirection];
+
+                Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
+            }
+
+            return Folding.ScaleFitness(cOverlapp, cNeighbour);
+        }
+
+        private static double fBase = 1000.0d;
+        private static double NeighbourScale = 100.0d;
+
+        public static double ScaleFitness(double Overlapps, double Neighbours) {
+            if (Overlapps > 0) {
+                return ( fBase / ( ( Overlapps + 1 ) * 3 ) ) + Neighbours;
+            }
+            return fBase + Neighbours * NeighbourScale;
+        }
+
+        public static int Neighbours(double Fitness) {
+            if (Fitness < 1000) {
+                return 0; //no approx solution here! its bad it has overlapps discard by all means!
+            }
+            return (int) ( ( Fitness - fBase ) / NeighbourScale );
+        }
+
+        public Task<double> CalculateFitnessAsync(char[] reference) {
+            return Task.Run(() => CalculateFitness(reference));
+        }
+
+        public void print(char[] reference, Logger log) {
+            throw new NotImplementedException();
+        }
+
+        public char[] GenerateRandom(int length) {
+            char[] ALP = { 'L', 'F', 'R' };
+            var rnd = new char[length];
+
+            for (int l = 0; l < length; l++) {
+                rnd[l] = ALP[RandomHelper.GetNextInteger(3)];
+            }
+            return rnd;
+        }
+
+        public object Clone() {
+            return new Folding(this);
         }
     }
 }

@@ -3,8 +3,8 @@ using XGA.Config;
 
 namespace XGA.Folding {
 
-    public class FoldingDefaultOperatorProvider : IGeneticOperatorProvider<Folding, string> {
-        public static List<IGeneticOperator<Folding, string>> Operators = new List<IGeneticOperator<Folding, string>>();
+    public class FoldingDefaultOperatorProvider : IGeneticOperatorProvider<Folding, char> {
+        public static List<IGeneticOperator<Folding, char>> Operators = new List<IGeneticOperator<Folding, char>>();
 
         static FoldingDefaultOperatorProvider() {
             Operators.Add(new FoldingSelectOperator());
@@ -12,7 +12,7 @@ namespace XGA.Folding {
             Operators.Add(new FoldingCrossoverOperator());
         }
 
-        IEnumerable<IGeneticOperator<Folding, string>> IGeneticOperatorProvider<Folding, string>.GetOperators() {
+        IEnumerable<IGeneticOperator<Folding, char>> IGeneticOperatorProvider<Folding, char>.GetOperators() {
             return Operators;
         }
     }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace XGA {
 
@@ -16,12 +18,30 @@ namespace XGA {
             return ul / (double) ( 1UL << 53 );
         }
 
+        public static IEnumerable<double> GetNextDoubleList(int size) {
+            for (int i = 0; i < size; i++) {
+                yield return GetNextDouble();
+            }
+        }
+
+        public static Task<double> GetAsyncNextDouble() {
+            return Task.Run(() => GetNextDouble());
+        }
+
         public static int GetNextInteger(int maxValue) {
             return (int) Math.Floor(GetNextDouble() * maxValue);
         }
 
-        public static double Exponential(double ex) {
+        public static Task<int> GetAsyncNextInteger(int maxValue) {
+            return Task.Run(() => GetNextInteger(maxValue));
+        }
+
+        public static double ExponentialDouble(double ex) {
             return Math.Log(1 - GetNextDouble()) / ( -ex );
+        }
+
+        public static int ExponentialInt(double ex) {
+            return (int) Math.Floor(ExponentialDouble(ex));
         }
     }
 }

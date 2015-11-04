@@ -15,7 +15,7 @@ namespace XGA.Helper {
 
         public GeneticAlgorithm<GAT, S> GA { get; private set; }
 
-        protected WorkingSet(string Name, GeneticAlgorithmConfig GAC, IGeneticOperatorProvider<GAT, S> Provider, Func<GeneticAlgorithm<GAT, S>, C> CM) {
+        protected WorkingSet(string Name, GeneticAlgorithmConfig<S> GAC, IGeneticOperatorProvider<GAT, S> Provider, Func<GeneticAlgorithm<GAT, S>, C> CM) {
             this.Finished = new ManualResetEvent(false);
             this.Name = Name;
             this.GA = new GeneticAlgorithm<GAT, S>(GAC, Provider, null);
