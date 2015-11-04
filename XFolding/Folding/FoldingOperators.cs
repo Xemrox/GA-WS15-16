@@ -118,7 +118,7 @@ namespace XGA.Folding {
                 var code1 = new char[f1.GAElement.BaseType.Length];
                 var code2 = new char[f1.GAElement.BaseType.Length];
                 var cutIndex = cutIndexTask.Result;
-                for (int pos = 0; pos < f1.GAElement.BaseType.Length; pos++) {
+                /*for (int pos = 0; pos < f1.GAElement.BaseType.Length; pos++) {
                     if (pos < cutIndex) {
                         code1[pos] = f2.GAElement.BaseType[pos];
                         code2[pos] = f1.GAElement.BaseType[pos];
@@ -126,7 +126,14 @@ namespace XGA.Folding {
                         code1[pos] = f1.GAElement.BaseType[pos];
                         code2[pos] = f2.GAElement.BaseType[pos];
                     }
-                }
+                }*/
+
+                //copy first part of elems to code elems
+                Buffer.BlockCopy(f1.GAElement.BaseType, 0, code2, 0, cutIndex * sizeof(char));
+                Buffer.BlockCopy(f2.GAElement.BaseType, 0, code1, 0, cutIndex * sizeof(char));
+                //copy second part of elems to code elems
+                Buffer.BlockCopy(f1.GAElement.BaseType, cutIndex * sizeof(char), code1, cutIndex * sizeof(char), ( code1.Length - cutIndex ) * sizeof(char));
+                Buffer.BlockCopy(f2.GAElement.BaseType, cutIndex * sizeof(char), code2, cutIndex * sizeof(char), ( code2.Length - cutIndex ) * sizeof(char));
 
                 f1.GAElement.BaseType = code1;
                 var f1Fitness = f1.GAElement.CalculateFitnessAsync(GA.GAC.Sequence);

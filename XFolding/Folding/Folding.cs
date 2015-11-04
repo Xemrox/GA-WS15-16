@@ -283,11 +283,11 @@ namespace XGA.Folding {
             return fBase + Neighbours * NeighbourScale;
         }
 
-        public static int Neighbours(double Fitness) {
+        public static double Neighbours(double Fitness) {
             if (Fitness < 1000) {
                 return 0; //no approx solution here! its bad it has overlapps discard by all means!
             }
-            return (int) ( ( Fitness - fBase ) / NeighbourScale );
+            return ( ( Fitness - fBase ) / NeighbourScale );
         }
 
         public Task<double> CalculateFitnessAsync(char[] reference) {

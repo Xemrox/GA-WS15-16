@@ -20,7 +20,7 @@ namespace XGA.Folding {
         }
 
         protected override void Evaluate(GeneticAlgorithm<Folding, char> GA) {
-            Console.WriteLine("[{0}] {1} | {3} | {2}", GA.CurrentGeneration, GA.MaxFitness, GA.AvgFitness, GA.Cache.Min(x => x.Fitness));
+            Console.WriteLine("[{0}] Max: {1} Avg: {2}", GA.CurrentGeneration, Folding.Neighbours(GA.MaxFitness), Folding.Neighbours(GA.AvgFitness));
         }
     }
 }
