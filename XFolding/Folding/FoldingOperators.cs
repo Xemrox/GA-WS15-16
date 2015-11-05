@@ -59,14 +59,14 @@ namespace XGA.Folding {
             var mutations = RandomHelper.ExponentialInt(GA.GAC.MutationRate * GA.GAC.PopulationSize);
             var chosen = new Dictionary<GeneticAlgorithm<Folding, char>.GACache, int>();
 
-            int iHits = 0;
+            /*int iHits = 0;
             for (int i = 0; i < GA.GAC.PopulationSize; i++) {
                 if (RandomHelper.GetNextDouble() <= GA.GAC.MutationRate) {
                     iHits++;
                 }
             }
 
-            mutations = iHits;
+            mutations = iHits;*/
 
             for (var i = 0; i < mutations; i++) {
                 var idx = RandomHelper.GetNextInteger(GA.GAC.PopulationSize);
@@ -91,14 +91,14 @@ namespace XGA.Folding {
         void IGeneticOperator<Folding, char>.Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
             var crossovers = RandomHelper.ExponentialInt(GA.GAC.CrossoverRate * GA.GAC.PopulationSize);
 
-            int iHits = 0;
+            /*int iHits = 0;
             for (int i = 0; i < GA.GAC.PopulationSize; i++) {
                 if (RandomHelper.GetNextDouble() <= GA.GAC.CrossoverRate) {
                     iHits++;
                 }
             }
 
-            crossovers = iHits;
+            crossovers = iHits;*/
 
             if (crossovers % 2 != 0) {
                 crossovers += 1;

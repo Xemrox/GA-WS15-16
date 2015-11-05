@@ -9,7 +9,7 @@ namespace XGA.Config {
 
         string getName();
 
-        void Run(Action<GeneticAlgorithm<T, S>> Evaluate);
+        void Run(Action Evaluate);
     }
 
     public abstract class CalculationMode<T, S> : ICalculationMode<T, S>
@@ -30,7 +30,7 @@ namespace XGA.Config {
 
         public abstract string getName();
 
-        public abstract void Run(Action<GeneticAlgorithm<T, S>> Evaluate);
+        public abstract void Run(Action Evaluate);
     }
 
     public class FiniteCalculation<T, S> :
@@ -45,10 +45,10 @@ namespace XGA.Config {
             return "Finite";
         }
 
-        public override void Run(Action<GeneticAlgorithm<T, S>> Evaluate) {
+        public override void Run(Action Evaluate) {
             while (this.CurrentGeneration < this.MaxGeneration) {
                 GA.GenerationStep();
-                Evaluate(GA);
+                Evaluate();
             }
         }
     }

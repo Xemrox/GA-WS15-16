@@ -37,7 +37,7 @@ namespace XGA {
         }
 
         public static double ExponentialDouble(double ex) {
-            return Math.Log(1 - GetNextDouble()) / ( -ex );
+            return Math.Log(1 - GetNextDouble()) / ( -1 / ex );
         }
 
         public static int ExponentialInt(double ex) {

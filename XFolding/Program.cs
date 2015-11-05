@@ -32,72 +32,6 @@ namespace XGA {
         public static readonly string SEQ03 = "0000000000111111";
         public static readonly string FOL03 = "FFFFFFLLLRFFFFR";
 
-        /*private class WorkingSet<T> where T : CalculationMode {
-            public string Name { get; set; }
-
-            //public GeneticAlgorithm Population { get; set; }
-            public double maxFitness { get; set; }
-
-            public HashSet<string> maxFoldings { get; private set; }
-            public Mutex StopMutex { get; private set; }
-            public ManualResetEvent Finished { get; private set; }
-            public StreamWriter Output { get; private set; }
-            public Action<string> Log { get; private set; }
-            public CalculationMode CalcMode { get; private set; }
-
-            public WorkingSet(string Name, T cm) {
-                this.Name = Name;
-                this.CalcMode = cm;
-                this.Population = p;
-                this.Output = Output;
-                this.Population.Output = new StreamWriter(Name + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
-                this.maxFitness = 0.0;
-                this.StopMutex = new Mutex(false);
-                this.maxFoldings = new HashSet<string>();
-                this.Finished = new ManualResetEvent(false);
-            }
-
-            public void Run(object Context) {
-                /*while (this.Population.LeftGenerations > 0) {
-                    this.StopMutex.WaitOne();
-
-                    this.Population.GenerationStep();
-                    var fMax = this.Population.Fitness.Max();
-                    if (fMax > maxFitness) {
-                        maxFitness = fMax;
-                        maxFoldings.Clear();
-                    }
-                    var TrueNeighbours = ( fMax - 1000.0d ) / 100.0d;
-                    Output.WriteLine("G: {4} E: {3} Max: {1} Min: {0} AVG: {2}", Population.Fitness.Min(), fMax, Population.Fitness.Average(), TrueNeighbours, Population.CurrentGeneration);
-                    var maxFolds = Enumerable.Range(0, this.Population.Fitness.Count()).Where(x => Population.Fitness[x] == fMax).Select(x => Population.Foldings[x]).ToHashSet(x => x.foldSeq);
-
-                    foreach (var fold in maxFolds) {
-                        var f = new Folding(fold);
-                        if (f.CalculateFitness(Population.Sequence) >= maxFitness) {
-                            maxFoldings.Add(fold);
-                        }
-                    }
-
-                    this.StopMutex.ReleaseMutex();
-                }
-
-                foreach (var fold in this.maxFoldings) {
-                    new Folding(fold).print(this.Population.Sequence, this.Output);
-                }
-
-                this.Output.Flush();
-                this.Output.Close();
-
-                this.Finished.Set();
-            }*/
-        /*
-    CalcMode.Run(this.Population, this.Evaluate);
-        }
-
-private void Evaluate(GeneticAlgorithm p) {
-}
-}*/
-
         public static void Main(string[] args) {
             Console.Title = "GA-2D-HP Modell";
 
@@ -144,12 +78,8 @@ private void Evaluate(GeneticAlgorithm p) {
                 new GeneticAlgorithmConfig() { Sequence = SEQ01 },
                 (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));*/
 
-            ///TODO
-            /// Add Logger
-            /// move Algorithm operations
-
-            var x = new FoldingWorkingSet("SEQ01",
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000 },
+            var x = new FoldingWorkingSet("SEQ64",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 500, MutationRate = 0.2 },
                 new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
                 {
                     return new List<IGeneticOperator<Folding.Folding, char>> {
@@ -158,7 +88,7 @@ private void Evaluate(GeneticAlgorithm p) {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 500));
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 1000));
 
             var WS = new List<FoldingWorkingSet>();
 
@@ -174,23 +104,7 @@ private void Evaluate(GeneticAlgorithm p) {
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
-            /*Random rnd = new Random(42);
-            var nums = new double[100];
-            for (int i = 0; i < 100; i++) {
-                nums[i] = rnd.NextDouble();
-            }
-
-            var total = nums.Sum();
-            var rel = nums.Select(d => d / total).ToArray();
-            var cumulatives = new double[100];
-            var cumulative = 0.0d;
-
-            for (int i = 0; i < 100; i++) {
-                cumulatives[i] = cumulative + rel[i];
-                cumulative += rel[i];
-            }*/
-
-            WaitHandle.WaitAll(WS.Select(y => y.Finished).ToArray());
+            WaitHandle.WaitAll(WS.Select(y => y.Lock).ToArray());
 
             //Console.WriteLine("{0}", Math.Log(1 - 0.5) / -( 0.10 * 1000 ));
 

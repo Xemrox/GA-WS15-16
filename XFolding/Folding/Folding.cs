@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using XGA.Config;
 using XGA.Helper;
@@ -295,7 +296,103 @@ namespace XGA.Folding {
         }
 
         public void print(char[] reference, Logger log) {
-            throw new NotImplementedException();
+            int Orientation = 0;
+            var Field = new Dictionary<Point, List<printhelper>>();
+            var currentPoint = new Point { X = 0, Y = 0 };
+
+            var MaxP = new Point { X = 0, Y = 0 };
+            var MinP = new Point { X = 0, Y = 0 };
+
+            double cNeighbour = 0;
+            double cOverlapp = 0;
+
+            int seqLength = this.BaseType.Length;
+            if (seqLength != reference.Length - 1) {
+                throw new Exception("Sequenzelengths do not match");
+            }
+            // Create Field
+            for (int i = 0; i < reference.Length; i++) {
+                Direction currentDirection;
+                if (i == reference.Length - 1) {
+                    currentDirection = Direction.U;
+                } else {
+                    currentDirection = cD[this.BaseType[i]];
+                }
+                var currentType = cT[reference[i]];
+
+                var iDirection = (int) currentDirection;
+
+                List<printhelper> elems;
+                if (Field.TryGetValue(currentPoint, out elems)) {
+                    //overlapp
+                    cOverlapp++;
+
+                    //hydrophil wins
+                    Field[currentPoint].Add(new printhelper { dir = currentDirection, type = currentType });
+                } else {
+                    var p = new List<printhelper>();
+                    p.Add(new printhelper { dir = currentDirection, type = currentType });
+                    Field[currentPoint] = p;
+                }
+
+                //check neighbours
+                List<Direction> dirs = currentDirection.GetNeighbours();
+                foreach (Direction dir in dirs) {
+                    var neighbour = new Point();
+                    neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
+                    neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
+
+                    if (Field.TryGetValue(neighbour, out elems)) {
+                        cNeighbour += elems.Where(x => x.type == FoldType.Hydrophobic).Count();
+                    }
+                }
+
+                currentPoint.X += OrientMapping[0][Orientation][iDirection];
+                currentPoint.Y += OrientMapping[1][Orientation][iDirection];
+
+                MinP.X = Math.Min(currentPoint.X, MinP.X);
+                MinP.Y = Math.Min(currentPoint.Y, MinP.Y);
+
+                MaxP.X = Math.Max(currentPoint.X, MaxP.X);
+                MaxP.Y = Math.Max(currentPoint.Y, MaxP.Y);
+
+                Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
+            }
+
+            var Fitness = Folding.ScaleFitness(cOverlapp, cNeighbour);
+
+            log.Write("\n");
+
+            var cP = new Point { X = 0, Y = 0 };
+            for (int y = MinP.Y - 1; y <= MaxP.Y + 1; y++) {
+                for (int x = MinP.X - 1; x <= MaxP.X + 1; x++) {
+                    cP.X = x; cP.Y = y;
+
+                    List<printhelper> elems;
+                    if (Field.TryGetValue(cP, out elems)) {
+                        var last = elems.Last();
+                        if (elems.Count > 1) {
+                            var msg = string.Format(" X{0}{1}", last.type.Print(), last.dir.ToString(true));
+                            log.Write(msg);
+                            Console.Write(msg);
+                        } else {
+                            var msg = string.Format("  {0}{1}", last.type.Print(), last.dir.ToString(true));
+                            log.Write(msg);
+                            Console.Write(msg);
+                        }
+                    } else {
+                        log.Write("  - ");
+                        Console.Write("  - ");
+                    }
+                }
+                log.Write(Environment.NewLine);
+                Console.WriteLine();
+            }
+            var result = string.Format("F: {0} N: {1} O: {2} S: {3}{4}", Fitness, cNeighbour, cOverlapp, new string(this.BaseType), Environment.NewLine);
+            log.Write(result);
+            Console.WriteLine(result);
+            log.Write(new string('-', ( ( -MinP.X ) + MaxP.X + 3 ) * 4) + Environment.NewLine);
+            Console.WriteLine("----------------------\n");
         }
 
         public char[] GenerateRandom(int length) {

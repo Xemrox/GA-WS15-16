@@ -82,14 +82,14 @@ namespace XGA {
             foreach (var op in this.Operators) {
                 op.Operate(this, Log);
 
-                for (int i = 0; i < this.Cache.Length; i++) {
+                /*for (int i = 0; i < this.Cache.Length; i++) {
                     var f = this.Cache[i];
                     var calcFitness = (int) Math.Floor(f.GAElement.CalculateFitness(this.GAC.Sequence));
                     var cacheFitness = (int) Math.Floor(f.Fitness);
                     if (calcFitness != cacheFitness) {
                         Console.WriteLine("Fail: {0}", i);
                     }
-                }
+                }*/
             }
 
             this.CurrentGeneration++;

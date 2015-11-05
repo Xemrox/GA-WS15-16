@@ -17,5 +17,11 @@ namespace XGA.Helper {
             }
             return ret;
         }
+
+        public static void AddRange<K>(this HashSet<K> me, IEnumerable<K> data) {
+            foreach (var d in data) {
+                me.Add(d);
+            }
+        }
     }
 }

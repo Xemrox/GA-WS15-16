@@ -13,6 +13,7 @@ namespace XGA.Helper {
         public Logger(string target) {
             this.m_target = new StreamWriter(target, false, Encoding.UTF8);
             this.m_enabledLvl.Add("log");
+            this.m_enabledLvl.Add("result");
         }
 
         public void EnableLogLvl(string lvl) {
@@ -27,6 +28,12 @@ namespace XGA.Helper {
             } /*
                 Console.WriteLine("Blocked lvl: {0} Msg: {1}", lvl, msg);
             */
+        }
+
+        public void Write(string s) {
+            if (this.m_finished) throw new Exception("Logger allready finished");
+
+            this.m_target.Write(s);
         }
 
         public void Finish() {
