@@ -64,22 +64,23 @@ namespace XGA {
                 mut.ReleaseMutex();*/
             };
 
-            var f = new Folding.Folding();
+            /*var f = new Folding.Folding();
             f.BaseType = FOL01.ToCharArray();
             var F = f.CalculateFitness(SEQ01.ToCharArray());
-            Console.WriteLine(Folding.Folding.Neighbours(F));
+            Console.WriteLine(Folding.Folding.Neighbours(F));*/
 
-            //var s = new StreamWriter("test.txt");
-            //f.print(SEQ01, s);
-            //s.Flush();
-            //s.Close();
+            /*var s = new Logger("test.txt");
+            var F = new Folding.Folding();
+            F.BaseType = FOL01.ToCharArray();
+            F.print(SEQ01.ToCharArray(), s);
+            s.Finish();*/
 
             /*var x = new FoldingWorkingSet<CalculationMode<Folding.Folding, string>>("SEQ01",
                 new GeneticAlgorithmConfig() { Sequence = SEQ01 },
                 (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));*/
 
             var x = new FoldingWorkingSet("SEQ64",
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 500, MutationRate = 0.2 },
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 500, MutationRate = 0.4, CrossoverRate = 0.3 },
                 new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
                 {
                     return new List<IGeneticOperator<Folding.Folding, char>> {
@@ -88,7 +89,7 @@ namespace XGA {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 1000));
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000));
 
             var WS = new List<FoldingWorkingSet>();
 
@@ -105,8 +106,6 @@ namespace XGA {
             }
 
             WaitHandle.WaitAll(WS.Select(y => y.Lock).ToArray());
-
-            //Console.WriteLine("{0}", Math.Log(1 - 0.5) / -( 0.10 * 1000 ));
 
             Console.WriteLine("Finished");
 

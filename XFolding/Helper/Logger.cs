@@ -37,6 +37,7 @@ namespace XGA.Helper {
         }
 
         public void Finish() {
+            this.m_finished = true;
             this.m_target.Flush();
             this.m_target.Close();
             this.m_target.Dispose();

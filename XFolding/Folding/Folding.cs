@@ -42,6 +42,7 @@ namespace XGA.Folding {
         }
 
         private struct printhelper {
+            public bool isFirst { get; set; }
             public Direction dir { get; set; }
             public FoldType type { get; set; }
         }
@@ -249,18 +250,19 @@ namespace XGA.Folding {
                 } else {
                     Field[currentPoint] = currentType == FoldType.Hydrophobic;
                 }
+                if (currentType == FoldType.Hydrophobic) {
+                    //check neighbours
+                    List<Direction> dirs = currentDirection.GetNeighbours();
+                    foreach (Direction dir in dirs) {
+                        var neighbour = new Point();
+                        neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
+                        neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
 
-                //check neighbours
-                List<Direction> dirs = currentDirection.GetNeighbours();
-                foreach (Direction dir in dirs) {
-                    var neighbour = new Point();
-                    neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
-                    neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
-
-                    bool bIsNeighbourHydrophobic = true;
-                    if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                        if (bIsNeighbourHydrophobic && currentType == FoldType.Hydrophobic) {
-                            cNeighbour++;
+                        bool bIsNeighbourHydrophobic = true;
+                        if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
+                            if (bIsNeighbourHydrophobic) {
+                                cNeighbour++;
+                            }
                         }
                     }
                 }
@@ -275,7 +277,7 @@ namespace XGA.Folding {
         }
 
         private static double fBase = 1000.0d;
-        private static double NeighbourScale = 100.0d;
+        private static double NeighbourScale = 50.0d;
 
         public static double ScaleFitness(double Overlapps, double Neighbours) {
             if (Overlapps > 0) {
@@ -306,6 +308,8 @@ namespace XGA.Folding {
             double cNeighbour = 0;
             double cOverlapp = 0;
 
+            bool bFirst = true;
+
             int seqLength = this.BaseType.Length;
             if (seqLength != reference.Length - 1) {
                 throw new Exception("Sequenzelengths do not match");
@@ -327,23 +331,27 @@ namespace XGA.Folding {
                     //overlapp
                     cOverlapp++;
 
-                    //hydrophil wins
-                    Field[currentPoint].Add(new printhelper { dir = currentDirection, type = currentType });
+                    Field[currentPoint].Add(new printhelper { isFirst = false, dir = currentDirection, type = currentType });
                 } else {
                     var p = new List<printhelper>();
-                    p.Add(new printhelper { dir = currentDirection, type = currentType });
+                    p.Add(new printhelper { isFirst = bFirst, dir = currentDirection, type = currentType });
                     Field[currentPoint] = p;
+                    if (bFirst) {
+                        bFirst = false;
+                    }
                 }
 
                 //check neighbours
-                List<Direction> dirs = currentDirection.GetNeighbours();
-                foreach (Direction dir in dirs) {
-                    var neighbour = new Point();
-                    neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
-                    neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
+                if (currentType == FoldType.Hydrophobic) {
+                    List<Direction> dirs = currentDirection.GetNeighbours();
+                    foreach (Direction dir in dirs) {
+                        var neighbour = new Point();
+                        neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
+                        neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
 
-                    if (Field.TryGetValue(neighbour, out elems)) {
-                        cNeighbour += elems.Where(x => x.type == FoldType.Hydrophobic).Count();
+                        if (Field.TryGetValue(neighbour, out elems)) {
+                            cNeighbour += elems.Where(x => x.type == FoldType.Hydrophobic).Count();
+                        }
                     }
                 }
 
@@ -364,7 +372,7 @@ namespace XGA.Folding {
             log.Write("\n");
 
             var cP = new Point { X = 0, Y = 0 };
-            for (int y = MinP.Y - 1; y <= MaxP.Y + 1; y++) {
+            for (int y = MaxP.Y + 1; y >= MinP.Y - 1; y--) {
                 for (int x = MinP.X - 1; x <= MaxP.X + 1; x++) {
                     cP.X = x; cP.Y = y;
 
@@ -373,6 +381,10 @@ namespace XGA.Folding {
                         var last = elems.Last();
                         if (elems.Count > 1) {
                             var msg = string.Format(" X{0}{1}", last.type.Print(), last.dir.ToString(true));
+                            log.Write(msg);
+                            Console.Write(msg);
+                        } else if (last.isFirst) {
+                            var msg = string.Format(" !{0}{1}", last.type.Print(), last.dir.ToString(true));
                             log.Write(msg);
                             Console.Write(msg);
                         } else {

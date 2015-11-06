@@ -29,6 +29,7 @@ namespace XGA.Folding {
             if (MaxFitness > MasterFitness) {
                 MasterFitness = MaxFitness;
                 Masters.Clear();
+                Masters.AddRange(GA.Cache.Where(x => x.Fitness >= MaxFitness).Select(x => new string(x.GAElement.BaseType)));
             } else if (MaxFitness >= MasterFitness) {
                 Masters.AddRange(GA.Cache.Where(x => x.Fitness >= MaxFitness).Select(x => new string(x.GAElement.BaseType)));
             }
@@ -44,6 +45,10 @@ namespace XGA.Folding {
                 f.BaseType = x.ToCharArray();
                 f.print(this.GAC.Sequence, this.Log);
             }
+
+            var msg = String.Format("S: {0} P: {1} M: {2} C: {3}{4}", new string(GAC.Sequence), GA.CurrentGeneration, GAC.PopulationSize, GAC.MutationRate, GAC.CrossoverRate, Environment.NewLine);
+            Console.WriteLine(msg);
+            this.Log.Write(msg);
         }
     }
 }
