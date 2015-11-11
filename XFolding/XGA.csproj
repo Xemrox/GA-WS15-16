@@ -49,6 +49,7 @@
     <Compile Include="Config\Direction.cs" />
     <Compile Include="Folding\FoldingDefaultOperatorProvider.cs" />
     <Compile Include="Folding\FoldingOperators.cs" />
+    <Compile Include="Folding\FoldingPlus.cs" />
     <Compile Include="Folding\FoldingWorkingSet.cs" />
     <Compile Include="Folding\Point.cs" />
     <Compile Include="Helper\Ext.cs" />

@@ -38,6 +38,13 @@ namespace XGA.Folding {
         }
     }
 
+    public class FoldingTournamentSelect : IGeneticSelect<Folding, char> {
+
+        public void Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
+            //throw new NotImplementedException();
+        }
+    }
+
     public class FoldingMutateOperator : IGeneticMutate<Folding, char> {
         private static Dictionary<char, char[]> MutationTable = new Dictionary<char, char[]>();
 

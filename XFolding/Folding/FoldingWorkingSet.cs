@@ -20,7 +20,7 @@ namespace XGA.Folding {
             base(Name, GAC, Provider, CM) {
         }
 
-        private HashSet<string> Masters = new HashSet<string>();
+        private readonly HashSet<string> Masters = new HashSet<string>();
         private double MasterFitness = 0.0d;
 
         protected override void Evaluate() {
@@ -46,7 +46,7 @@ namespace XGA.Folding {
                 f.print(this.GAC.Sequence, this.Log);
             }
 
-            var msg = String.Format("S: {0} P: {1} M: {2} C: {3}{4}", new string(GAC.Sequence), GA.CurrentGeneration, GAC.PopulationSize, GAC.MutationRate, GAC.CrossoverRate, Environment.NewLine);
+            var msg = String.Format("S: {0} G: {1} P: {2} M: {3} C: {4}{5}", new string(GAC.Sequence), GA.CurrentGeneration, GAC.PopulationSize, GAC.MutationRate, GAC.CrossoverRate, Environment.NewLine);
             Console.WriteLine(msg);
             this.Log.Write(msg);
         }

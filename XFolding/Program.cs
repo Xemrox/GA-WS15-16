@@ -79,7 +79,21 @@ namespace XGA {
                 new GeneticAlgorithmConfig() { Sequence = SEQ01 },
                 (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));*/
 
-            var x = new FoldingWorkingSet("SEQ64",
+            var WS = new List<FoldingWorkingSet>();
+
+            WS.Add(new FoldingWorkingSet("SEQ01",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000, /*MutationRate = 0.4, CrossoverRate = 0.3*/ },
+                new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
+                {
+                    return new List<IGeneticOperator<Folding.Folding, char>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));
+
+            WS.Add(new FoldingWorkingSet("SEQ64",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 500, MutationRate = 0.4, CrossoverRate = 0.3 },
                 new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
                 {
@@ -89,23 +103,28 @@ namespace XGA {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000));
-
-            var WS = new List<FoldingWorkingSet>();
-
-            WS.Add(x);
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));
 
             //WS.Add(new WorkingSet("SEQ01", new Population(SEQ01, 200, 10000, 0.20, 0.30), new StreamWriter("SEQ01-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
             //WS.Add(new WorkingSet("SEQ50", new Population(SEQ50, 200, 10000, 0.10, 0.30), new StreamWriter("SEQ50-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
             //WS.Add(new WorkingSet("SEQ48", new Population(SEQ48, 200, 10000, 0.40, 0.45), new StreamWriter("SEQ48-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
             //WS.Add(new WorkingSet("SEQ64", new Population(SEQ64, 200, 10000, 0.30, 0.45), new StreamWriter("SEQ64-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
 
-            foreach (var ws in WS) {
+            /*foreach (var ws in WS) {
                 Console.WriteLine("Started: {0}", ws.Name);
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
-            WaitHandle.WaitAll(WS.Select(y => y.Lock).ToArray());
+            WaitHandle.WaitAll(WS.Select(y => y.Lock).ToArray());*/
+
+            var fp = new FoldingPlus();
+            //fp.BaseType = FOL01.ToCharArray();
+            //fp.CalculateFitness(SEQ01.ToCharArray());
+            //fp.print(SEQ01.ToCharArray(), new ConsoleLogger());
+
+            fp.BaseType = FOL02.ToCharArray();
+            fp.CalculateFitness(SEQ02.ToCharArray());
+            fp.print(SEQ02.ToCharArray(), new ConsoleLogger());
 
             Console.WriteLine("Finished");
 

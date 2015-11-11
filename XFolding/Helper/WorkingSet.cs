@@ -22,7 +22,7 @@ namespace XGA.Helper {
         protected WorkingSet(string Name, GeneticAlgorithmConfig<S> GAC, IGeneticOperatorProvider<GAT, S> Provider, Func<GeneticAlgorithm<GAT, S>, C> CM) {
             this.Lock = new ManualResetEvent(false);
             this.Name = Name;
-            this.Log = new Logger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
+            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
             this.GA = new GeneticAlgorithm<GAT, S>(GAC, Provider, Log);
             this.CalculationMode = CM(this.GA);
             this.GAC = GAC;

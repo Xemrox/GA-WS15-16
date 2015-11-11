@@ -5,13 +5,11 @@ using System.Text;
 
 namespace XGA.Helper {
 
-    public sealed class Logger {
-        private bool m_finished = false;
-        private readonly StreamWriter m_target;
-        private HashSet<string> m_enabledLvl = new HashSet<string>();
+    public abstract class Logger {
+        protected bool m_finished = false;
+        protected HashSet<string> m_enabledLvl = new HashSet<string>();
 
-        public Logger(string target) {
-            this.m_target = new StreamWriter(target, false, Encoding.UTF8);
+        protected Logger() {
             this.m_enabledLvl.Add("log");
             this.m_enabledLvl.Add("result");
         }
@@ -20,27 +18,58 @@ namespace XGA.Helper {
             this.m_enabledLvl.Add(lvl);
         }
 
-        public void Log(string msg, string lvl = "log") {
+        public virtual void Log(string msg, string lvl = "log") {
             if (this.m_finished) throw new Exception("Logger allready finished");
-
-            if (this.m_enabledLvl.Contains(lvl)) {
-                this.m_target.WriteLine(string.Format("[{1}] {0}", msg, DateTime.Now.ToLongTimeString()));
-            } /*
-                Console.WriteLine("Blocked lvl: {0} Msg: {1}", lvl, msg);
-            */
         }
 
-        public void Write(string s) {
+        public virtual void Write(string s) {
             if (this.m_finished) throw new Exception("Logger allready finished");
+        }
 
+        public virtual void Finish() {
+            this.m_finished = true;
+        }
+    }
+
+    public class StreamLogger : Logger {
+        private readonly StreamWriter m_target;
+
+        public StreamLogger(string target) {
+            this.m_target = new StreamWriter(target, false, Encoding.UTF8);
+        }
+
+        public override void Log(string msg, string lvl = "log") {
+            base.Log(msg, lvl);
+            if (this.m_enabledLvl.Contains(lvl)) {
+                this.m_target.WriteLine(string.Format("[{1}] {0}", msg, DateTime.Now.ToLongTimeString()));
+            }
+        }
+
+        public override void Write(string s) {
+            base.Write(s);
             this.m_target.Write(s);
         }
 
-        public void Finish() {
-            this.m_finished = true;
+        public override void Finish() {
+            base.Finish();
             this.m_target.Flush();
             this.m_target.Close();
             this.m_target.Dispose();
+        }
+    }
+
+    public class ConsoleLogger : Logger {
+
+        public override void Log(string msg, string lvl = "log") {
+            //base.Log(msg, lvl);   //ignore finish
+            if (this.m_enabledLvl.Contains(lvl)) {
+                Console.WriteLine(msg);
+            }
+        }
+
+        public override void Write(string s) {
+            //base.Write(s);    //ignore finish
+            Console.Write(s);
         }
     }
 }
