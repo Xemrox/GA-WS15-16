@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using XGA.Config;
 
 namespace XGA.Folding {
 
-    public class FoldingDefaultOperatorProvider : IGeneticOperatorProvider<Folding, char> {
-        public static List<IGeneticOperator<Folding, char>> Operators = new List<IGeneticOperator<Folding, char>>();
+    public class FoldingDefaultOperatorProvider : IGeneticOperatorProvider<char> {
+        public static List<IGeneticOperator<char>> Operators = new List<IGeneticOperator<char>>();
 
         static FoldingDefaultOperatorProvider() {
             Operators.Add(new FoldingSelectOperator());
@@ -12,7 +13,7 @@ namespace XGA.Folding {
             Operators.Add(new FoldingCrossoverOperator());
         }
 
-        IEnumerable<IGeneticOperator<Folding, char>> IGeneticOperatorProvider<Folding, char>.GetOperators() {
+        IEnumerable<IGeneticOperator<char>> IGeneticOperatorProvider<char>.GetOperators() {
             return Operators;
         }
     }

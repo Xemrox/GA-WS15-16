@@ -2,10 +2,9 @@
 
 namespace XGA.Config {
 
-    public interface IGeneticOperatorProvider<T, S>
-        where T : IFitnessMeasured<S>, new() {
+    public interface IGeneticOperatorProvider<T> {
 
-        IEnumerable<IGeneticOperator<T, S>> GetOperators();
+        IEnumerable<IGeneticOperator<T>> GetOperators();
 
         /*IGeneticSelect<T, S> GetSelector();
 

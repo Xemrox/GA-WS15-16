@@ -6,9 +6,9 @@ using XGA.Helper;
 
 namespace XGA.Folding {
 
-    public class FoldingSelectOperator : IGeneticSelect<Folding, char> {
+    public class FoldingSelectOperator : IGeneticOperator<char> {
 
-        void IGeneticOperator<Folding, char>.Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
+        public void Operate(GeneticAlgorithm<char> GA, Logger LOG) {
             var TotalFitness = GA.TotalFitness;
             var relFitness = GA.Fitness.Select(x => x / TotalFitness).ToArray();
 
@@ -22,7 +22,7 @@ namespace XGA.Folding {
                 cumulative += relFitness[i];
             }
 
-            var Selection = new List<GeneticAlgorithm<Folding, char>.GACache>();
+            var Selection = new List<GeneticAlgorithm<char>.GACache>();
 
             foreach (var rnd in RandomHelper.GetNextDoubleList(GA.GAC.PopulationSize)) {
                 //for (int i = 0; i < GA.GAC.PopulationSize; i++) {
@@ -31,22 +31,22 @@ namespace XGA.Folding {
 
                 //Console.WriteLine("Took: {0}", iIndex);
 
-                Selection.Add(new GeneticAlgorithm<Folding, char>.GACache(GA.Cache[iIndex]));
+                Selection.Add(new GeneticAlgorithm<char>.GACache(GA.Cache[iIndex]));
             }
 
             GA.Cache = Selection.ToArray();
         }
     }
 
-    public class FoldingTournamentSelect : IGeneticSelect<Folding, char> {
+    public class FoldingTournamentSelect : IGeneticOperator<char> {
 
-        public void Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
-            //throw new NotImplementedException();
+        public void Operate(GeneticAlgorithm<char> GA, Logger LOG) {
+            throw new NotImplementedException();
         }
     }
 
-    public class FoldingMutateOperator : IGeneticMutate<Folding, char> {
-        private static Dictionary<char, char[]> MutationTable = new Dictionary<char, char[]>();
+    public class FoldingMutateOperator : IGeneticOperator<char> {
+        private static readonly Dictionary<char, char[]> MutationTable = new Dictionary<char, char[]>();
 
         static FoldingMutateOperator() {
             MutationTable.Add('L', new char[] { 'F', 'R' });
@@ -54,17 +54,9 @@ namespace XGA.Folding {
             MutationTable.Add('R', new char[] { 'F', 'L' });
         }
 
-        private void Mutate(GeneticAlgorithm<Folding, char> GA, GeneticAlgorithm<Folding, char>.GACache entry, Logger LOG) {
-            var MutationType = RandomHelper.GetAsyncNextInteger(1);
-            var Index = RandomHelper.GetNextInteger(entry.GAElement.BaseType.Length);
-
-            entry.GAElement.BaseType[Index] = MutationTable[entry.GAElement.BaseType[Index]][MutationType.Result];
-            entry.Fitness = entry.GAElement.CalculateFitness(GA.GAC.Sequence);
-        }
-
-        void IGeneticOperator<Folding, char>.Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
-            var mutations = RandomHelper.ExponentialInt(GA.GAC.MutationRate * GA.GAC.PopulationSize);
-            var chosen = new Dictionary<GeneticAlgorithm<Folding, char>.GACache, int>();
+        public void Operate(GeneticAlgorithm<char> GA, Logger LOG) {
+            var mutations = RandomHelper.PoissonInt(GA.GAC.MutationRate * GA.GAC.PopulationSize);
+            var chosen = new Dictionary<GeneticAlgorithm<char>.GACache, int>();
 
             /*int iHits = 0;
             for (int i = 0; i < GA.GAC.PopulationSize; i++) {
@@ -91,11 +83,19 @@ namespace XGA.Folding {
                 }
             }
         }
+
+        private void Mutate(GeneticAlgorithm<char> GA, GeneticAlgorithm<char>.GACache entry, Logger LOG) {
+            var MutationType = RandomHelper.GetAsyncNextInteger(1);
+            var Index = RandomHelper.GetNextInteger(entry.GAElement.BaseType.Length);
+
+            entry.GAElement.BaseType[Index] = MutationTable[entry.GAElement.BaseType[Index]][MutationType.Result];
+            entry.Fitness = entry.GAElement.CalculateFitness(GA.GAC.Sequence);
+        }
     }
 
-    public class FoldingCrossoverOperator : IGeneticCrossover<Folding, char> {
+    public class FoldingCrossoverOperator : IGeneticOperator<char> {
 
-        void IGeneticOperator<Folding, char>.Operate(GeneticAlgorithm<Folding, char> GA, Logger LOG) {
+        public void Operate(GeneticAlgorithm<char> GA, Logger LOG) {
             var crossovers = RandomHelper.ExponentialInt(GA.GAC.CrossoverRate * GA.GAC.PopulationSize);
 
             /*int iHits = 0;
@@ -125,15 +125,6 @@ namespace XGA.Folding {
                 var code1 = new char[f1.GAElement.BaseType.Length];
                 var code2 = new char[f1.GAElement.BaseType.Length];
                 var cutIndex = cutIndexTask.Result;
-                /*for (int pos = 0; pos < f1.GAElement.BaseType.Length; pos++) {
-                    if (pos < cutIndex) {
-                        code1[pos] = f2.GAElement.BaseType[pos];
-                        code2[pos] = f1.GAElement.BaseType[pos];
-                    } else {
-                        code1[pos] = f1.GAElement.BaseType[pos];
-                        code2[pos] = f2.GAElement.BaseType[pos];
-                    }
-                }*/
 
                 //copy first part of elems to code elems
                 Buffer.BlockCopy(f1.GAElement.BaseType, 0, code2, 0, cutIndex * sizeof(char));

@@ -12,8 +12,8 @@ namespace XGA.Folding {
         public override double CalculateFitness(char[] reference) {
             int Orientation = 0;
             var positions = new Point[reference.Length];
+            var types = new FoldType[reference.Length];
 
-            //var Field = new Dictionary<Point, bool>();
             var currentPoint = new Point { X = 0, Y = 0 };
 
             double cNeighbour = 0;
@@ -31,36 +31,9 @@ namespace XGA.Folding {
                 } else {
                     currentDirection = cD[this.BaseType[i]];
                 }
-                var currentType = cT[reference[i]];
+                var currentType = types[i] = cT[reference[i]];
 
                 var iDirection = (int) currentDirection;
-
-                /*bool bUsedByHydrophobic = true;
-                if (Field.TryGetValue(currentPoint, out bUsedByHydrophobic)) {
-                    //overlapp
-                    cOverlapp++;
-
-                    //hydrophil wins
-                    Field[currentPoint] = bUsedByHydrophobic && currentType == FoldType.Hydrophobic;
-                } else {
-                    Field[currentPoint] = currentType == FoldType.Hydrophobic;
-                }
-                if (currentType == FoldType.Hydrophobic) {
-                    //check neighbours
-                    List<Direction> dirs = currentDirection.GetNeighbours();
-                    foreach (Direction dir in dirs) {
-                        var neighbour = new Point();
-                        neighbour.X = currentPoint.X + OrientMapping[0][Orientation][(int) dir];
-                        neighbour.Y = currentPoint.Y + OrientMapping[1][Orientation][(int) dir];
-
-                        bool bIsNeighbourHydrophobic = true;
-                        if (Field.TryGetValue(neighbour, out bIsNeighbourHydrophobic)) {
-                            if (bIsNeighbourHydrophobic) {
-                                cNeighbour++;
-                            }
-                        }
-                    }
-                }*/
 
                 positions[i] = currentPoint;
 
@@ -70,17 +43,26 @@ namespace XGA.Folding {
                 Orientation = ( ( iDirection - 2 ) + Orientation ).mod(4);
             }
 
-            for (int leftI = 0; leftI < reference.Length; leftI++) {
+            int refL = reference.Length - 1;
+
+            for (int leftI = 0; leftI < refL; leftI++) {
                 for (int rightI = reference.Length - 1; rightI > leftI; rightI--) {
-                    var distance = positions[rightI].distance(positions[leftI]);
-                    Console.WriteLine("{0},{1} -> {2},{3} {4},{5} D: {6}", leftI, rightI, positions[leftI].X, positions[leftI].Y, positions[rightI].X, positions[rightI].Y, distance);
+                    var posRight = positions[rightI];
+                    var posLeft = positions[leftI];
+                    var distance = posRight.distance(positions[leftI]);
+                    //Console.WriteLine("{0},{1} -> {2},{3} {4},{5} D: {6}", leftI, rightI, positions[leftI].X, positions[leftI].Y, positions[rightI].X, positions[rightI].Y, distance);
                     if (distance == 0) {
-                        //overlapp?
-                        Console.WriteLine("Overlapp");
+                        //overlapp
+                        //Console.WriteLine("Overlapp");
                         cOverlapp++;
                     } else if (distance == 1) {
-                        Console.WriteLine("{0},{1} near {2},{3}", positions[leftI].X, positions[leftI].Y, positions[rightI].X, positions[rightI].Y);
-                        //Console.WriteLine("Near!");
+                        if (types[leftI] == FoldType.Hydrophobic && types[rightI] == FoldType.Hydrophobic) {
+                            if (positions[leftI + 1].distance(posRight) != 0) { //nextPoint is not the next Point in chain
+                                //Console.WriteLine("{0},{1},{2}", nextX, nextY, nextPos.distance(posRight));
+                                //Console.WriteLine("{0},{1} near {2},{3}", positions[leftI].X, positions[leftI].Y, positions[rightI].X, positions[rightI].Y);
+                                cNeighbour++;
+                            }
+                        }
                     } else {
                         rightI -= ( distance - 2 );
                     }

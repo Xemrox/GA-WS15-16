@@ -36,6 +36,21 @@ namespace XGA {
             return Task.Run(() => GetNextInteger(maxValue));
         }
 
+        public static int PoissonInt(double ex) {
+            var x = 0;
+            var lambda = ex;
+            var p = Math.Pow(Math.E, -( lambda ));
+            var s = p;
+            var u = GetNextDouble();
+
+            while (u > s) {
+                x++;
+                p = p * lambda / x;
+                s += p;
+            }
+            return x;
+        }
+
         public static double ExponentialDouble(double ex) {
             return Math.Log(1 - GetNextDouble()) / ( -1 / ex );
         }

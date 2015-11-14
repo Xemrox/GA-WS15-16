@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using XGA.Helper;
 
 namespace XGA.Config {
@@ -6,6 +7,8 @@ namespace XGA.Config {
     public interface IFitnessMeasured<T> : ICloneable {
 
         double CalculateFitness(T[] reference);
+
+        Task<double> CalculateFitnessAsync(T[] reference);
 
         void print(T[] reference, Logger log);
 

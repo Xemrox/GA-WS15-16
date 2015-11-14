@@ -15,13 +15,15 @@ namespace XGA {
         // source: Ron Unger, John Moult: Genetic Algorithms for Protein Folding Simulations,
         //         Journal of Molecular Biology, Vol. 231, No. 1, May 1993
 
-        public static readonly string SEQ20 = "10100110100101100101";
-        public static readonly string SEQ24 = "110010010010010010010011";   //12
-        public static readonly string SEQ25 = "0010011000011000011000011";  //12?
-        public static readonly string SEQ36 = "000110011000001111111001100001100100";
-        public static readonly string SEQ48 = "001001100110000011111111110000001100110010011111";
-        public static readonly string SEQ50 = "11010101011110100010001000010001000101111010101011";
-        public static readonly string SEQ64 = "1111111111110101001100110010011001100100110011001010111111111111";
+        public static readonly string SEQ20 = "10100110100101100101";   //9
+        public static readonly string SEQ24 = "110010010010010010010011";   //9
+        public static readonly string SEQ25 = "0010011000011000011000011";  //8
+        public static readonly string SEQ36 = "000110011000001111111001100001100100";   //14
+        public static readonly string SEQ48 = "001001100110000011111111110000001100110010011111";   //22
+        public static readonly string SEQ50 = "11010101011110100010001000010001000101111010101011"; //21
+        public static readonly string SEQ60 = "001110111111110001111111111010001111111111110000111111011010";   //34
+
+        public static readonly string SEQ64 = "1111111111110101001100110010011001100100110011001010111111111111";   //42
 
         public static readonly string SEQ01 = "10100110100101100101"; //9
         public static readonly string FOL01 = "FRFRRLLRFRRLRLLRRFR";
@@ -34,7 +36,6 @@ namespace XGA {
 
         public static void Main(string[] args) {
             Console.Title = "GA-2D-HP Modell";
-
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e) {
                 /*mut.WaitOne();
                 Console.WriteLine("-----------------------");
@@ -81,8 +82,8 @@ namespace XGA {
 
             var WS = new List<FoldingWorkingSet>();
 
-            WS.Add(new FoldingWorkingSet("SEQ01",
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000, /*MutationRate = 0.4, CrossoverRate = 0.3*/ },
+            /*WS.Add(new FoldingWorkingSet("SEQ01",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000 },
                 new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
                 {
                     return new List<IGeneticOperator<Folding.Folding, char>> {
@@ -103,28 +104,76 @@ namespace XGA {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));*/
 
-            //WS.Add(new WorkingSet("SEQ01", new Population(SEQ01, 200, 10000, 0.20, 0.30), new StreamWriter("SEQ01-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            //WS.Add(new WorkingSet("SEQ50", new Population(SEQ50, 200, 10000, 0.10, 0.30), new StreamWriter("SEQ50-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            //WS.Add(new WorkingSet("SEQ48", new Population(SEQ48, 200, 10000, 0.40, 0.45), new StreamWriter("SEQ48-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
-            //WS.Add(new WorkingSet("SEQ64", new Population(SEQ64, 200, 10000, 0.30, 0.45), new StreamWriter("SEQ64-" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt")));
+            WS.Add(new FoldingWorkingSet("SEQ24-1",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2, Hamming = true },
+                new GenericGeneticOperatorProvider<char>(() =>
+                {
+                    return new List<IGeneticOperator<char>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<char>(GA, 100)));
 
-            /*foreach (var ws in WS) {
+            /*WS.Add(new FoldingWorkingSet("SEQ24-2",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
+                new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
+                {
+                    return new List<IGeneticOperator<Folding.Folding, char>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 100)));
+
+            WS.Add(new FoldingWorkingSet("SEQ24-3",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
+                new GenericGeneticOperatorProvider<Folding.Folding, char>(() =>
+                {
+                    return new List<IGeneticOperator<Folding.Folding, char>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 100)));
+                */
+            foreach (var ws in WS) {
                 Console.WriteLine("Started: {0}", ws.Name);
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
-            WaitHandle.WaitAll(WS.Select(y => y.Lock).ToArray());*/
+            WaitHandle.WaitAll(WS.Select(x => x.Lock).ToArray());
+            /**/
+
+            /*var testSeq = new List<string>();
+            testSeq.Add("LLFLLRRLFLLRLRRLLFL");
+            testSeq.Add("FLFLLRRLFLLRLRRLLFL");
+            testSeq.Add("RLFLLRRLFLLRLRRLLFL");
+            testSeq.Add("LLFLLRRLRLLFLRRLLFL");
+            testSeq.Add("FLFLLRRLRLLFLRRLLFL");
+            testSeq.Add("RLFLLRRLRLLFLRRLLFL");
 
             var fp = new FoldingPlus();
-            //fp.BaseType = FOL01.ToCharArray();
-            //fp.CalculateFitness(SEQ01.ToCharArray());
-            //fp.print(SEQ01.ToCharArray(), new ConsoleLogger());
+            fp.BaseType = FOL01.ToCharArray();
+            Console.WriteLine(fp.CalculateFitness(SEQ01.ToCharArray()));
+            fp.print(SEQ01.ToCharArray(), new ConsoleLogger());
 
-            fp.BaseType = FOL02.ToCharArray();
-            fp.CalculateFitness(SEQ02.ToCharArray());
-            fp.print(SEQ02.ToCharArray(), new ConsoleLogger());
+            foreach (var s in testSeq) {
+                fp.BaseType = s.ToCharArray();
+                Console.WriteLine(fp.CalculateFitness(SEQ01.ToCharArray()));
+            }
+
+            fp.BaseType = "FFLLFRFRRLLFLFFLFFFFRRFFFFLFFFFRRFFFFFFFFFFLFFLFRLFLFRFLLFFFLLR".ToCharArray();
+            Console.WriteLine(fp.CalculateFitness(SEQ64.ToCharArray()));*/
+
+            //fp.BaseType = FOL02.ToCharArray();
+            //fp.CalculateFitness(SEQ02.ToCharArray());
+            //fp.print(SEQ02.ToCharArray(), new ConsoleLogger());
 
             Console.WriteLine("Finished");
 

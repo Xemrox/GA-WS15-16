@@ -5,6 +5,7 @@
         public double MutationRate { get; set; }
         public double CrossoverRate { get; set; }
         public S[] Sequence { get; set; }
+        public bool Hamming { get; set; }
 
         public GeneticAlgorithmConfig() {
             this.PopulationSize = 100;
