@@ -9,16 +9,19 @@ namespace XGA {
     public class GeneticAlgorithm<T> {
 
         public class GACache {
-
-            public GACache(int length, T[] seq) {
+            /*public GACache(int length, T[] seq) {
                 // new IFitnessMeasured<T>?
+
                 this.GAElement.BaseType = this.GAElement.GenerateRandom(length);
                 this.Fitness = this.GAElement.CalculateFitness(seq);
-            }
+            }*/
 
             public GACache(GACache copy) {
                 this.Fitness = copy.Fitness;
                 this.GAElement = (IFitnessMeasured<T>) copy.GAElement.Clone();
+            }
+
+            public GACache() {
             }
 
             public IFitnessMeasured<T> GAElement { get; set; }
@@ -57,6 +60,8 @@ namespace XGA {
             }
         }
 
+        public IFitnessMeasuredCreator<T> Creator { get; set; }
+
         public GeneticAlgorithmConfig<T> GAC { get; private set; }
         public int CurrentGeneration { get; set; }
 
@@ -64,17 +69,20 @@ namespace XGA {
 
         private Logger Log { get; set; }
 
-        public GeneticAlgorithm(GeneticAlgorithmConfig<T> gac, IGeneticOperatorProvider<T> OperatorProvider, Logger log) {
+        public GeneticAlgorithm(GeneticAlgorithmConfig<T> gac, IGeneticOperatorProvider<T> OperatorProvider, IFitnessMeasuredCreator<T> Creator, Logger log) {
             this.Log = log;
             this.CurrentGeneration = 0;
             this.Operators = OperatorProvider.GetOperators();
 
+            this.Creator = Creator;
+
             this.GAC = gac;
 
             this.Cache = new GACache[this.GAC.PopulationSize];
-            var TequenceLength = this.GAC.Sequence.Length - 1;
+
             for (int i = 0; i < this.GAC.PopulationSize; i++) {
-                this.Cache[i] = new GACache(TequenceLength, this.GAC.Sequence);
+                var Elem = Creator.CreateNew(this.GAC);
+                Cache[i] = new GACache() { GAElement = Elem, Fitness = Elem.CalculateFitness(this.GAC.Sequence) };
             }
         }
 

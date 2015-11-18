@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace XGA.Config {
 
-    internal interface IFitnessMeasuredCreator<T> {
+    public interface IFitnessMeasuredCreator<T> {
 
-        IFitnessMeasured<T> CreateNew();
+        IFitnessMeasured<T> CreateNew(GeneticAlgorithmConfig<T> GAC);
     }
 }

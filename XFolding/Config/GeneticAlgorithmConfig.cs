@@ -1,11 +1,10 @@
 ﻿namespace XGA {
 
-    public class GeneticAlgorithmConfig<S> {
+    public class GeneticAlgorithmConfig<T> {
         public int PopulationSize { get; set; }
         public double MutationRate { get; set; }
         public double CrossoverRate { get; set; }
-        public S[] Sequence { get; set; }
-        public bool Hamming { get; set; }
+        public T[] Sequence { get; set; }
 
         public GeneticAlgorithmConfig() {
             this.PopulationSize = 100;

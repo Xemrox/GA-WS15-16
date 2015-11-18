@@ -7,7 +7,7 @@ using XGA.Helper;
 
 namespace XGA.Folding {
 
-    public class FoldingPlus : Folding {
+    public class FoldingShort : Folding {
 
         public override double CalculateFitness(char[] reference) {
             int Orientation = 0;

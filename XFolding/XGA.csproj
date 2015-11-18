@@ -44,12 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\CalculationMode.cs" />
+    <Compile Include="Config\IFitnessMeasuredCreator.cs" />
     <Compile Include="Config\IGeneticOperator.cs" />
     <Compile Include="Config\IGeneticOperatorProvider.cs" />
     <Compile Include="Config\Direction.cs" />
+    <Compile Include="Folding\FoldingCreator.cs" />
     <Compile Include="Folding\FoldingDefaultOperatorProvider.cs" />
     <Compile Include="Folding\FoldingOperators.cs" />
-    <Compile Include="Folding\FoldingPlus.cs" />
+    <Compile Include="Folding\FoldingShort.cs" />
     <Compile Include="Folding\FoldingWorkingSet.cs" />
     <Compile Include="Folding\Point.cs" />
     <Compile Include="Helper\Ext.cs" />

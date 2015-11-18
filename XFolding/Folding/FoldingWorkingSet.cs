@@ -8,16 +8,18 @@ using XGA.Helper;
 namespace XGA.Folding {
 
     public class FoldingWorkingSet : WorkingSet<char, CalculationMode<char>> {
+        public bool CalculateHamming { get; set; }
 
-        public FoldingWorkingSet(string Name, GeneticAlgorithmConfig<char> GAC, Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
-            base(Name, GAC, new FoldingDefaultOperatorProvider(), CM) {
+        public FoldingWorkingSet(string Name, bool Hamming, GeneticAlgorithmConfig<char> GAC, Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
+            base(Name, GAC, new FoldingDefaultOperatorProvider(), new FoldingCreator(), CM) {
+            this.CalculateHamming = Hamming;
         }
 
         public FoldingWorkingSet(string Name,
             GeneticAlgorithmConfig<char> GAC,
             IGeneticOperatorProvider<char> Provider,
             Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
-            base(Name, GAC, Provider, CM) {
+            base(Name, GAC, Provider, new FoldingCreator(), CM) {
         }
 
         private readonly HashSet<string> Masters = new HashSet<string>();
@@ -43,29 +45,32 @@ namespace XGA.Folding {
             } else if (MaxFitness >= MasterFitness) {
                 Masters.AddRange(GA.Cache.Where(x => x.Fitness >= MaxFitness).Select(x => new string(x.GAElement.BaseType)));
             }
+            string msg;
+            if (this.CalculateHamming) {
+                var hammingSize = GA.GAC.PopulationSize;
+                var hamminglist = new double[hammingSize];
 
-            var hammingSize = GA.GAC.PopulationSize;
-            var hamminglist = new double[hammingSize];
+                //create permutations
+                for (int start = 0; start < GA.GAC.PopulationSize; start++) {
+                    for (int combination = 0; combination < GA.GAC.PopulationSize; combination++) {
+                        if (start == combination) continue;
+                        //skip distance to self
 
-            //create permutations
-            for (int start = 0; start < GA.GAC.PopulationSize; start++) {
-                for (int combination = 0; combination < GA.GAC.PopulationSize; combination++) {
-                    if (start == combination) continue;
-                    //skip distance to self
+                        var baseBla = GA.Cache[start].GAElement.BaseType;
+                        var distanceBla = GA.Cache[combination].GAElement.BaseType;
 
-                    var baseBla = GA.Cache[start].GAElement.BaseType;
-                    var distanceBla = GA.Cache[combination].GAElement.BaseType;
-
-                    hamminglist[start] += (double) HammingDistance(baseBla, distanceBla) / (double) GA.GAC.PopulationSize;
+                        hamminglist[start] += (double) HammingDistance(baseBla, distanceBla) / (double) GA.GAC.PopulationSize;
+                    }
                 }
+                var hammingAvg = hamminglist.Average();
+                for (int i = 0; i < hamminglist.Length; i++) {
+                    hamminglist[i] = Math.Pow(hamminglist[i] - hammingAvg, 2);
+                }
+                var hammingVar = Math.Sqrt(hamminglist.Average());
+                msg = string.Format("[{0}] Max: {1} MaxF: {2} Avg: {3} AvgF: {4} Hamming: {5} HV: {6}", GA.CurrentGeneration, MaxFitness, Folding.Neighbours(MaxFitness), AvgFitness, Folding.Neighbours(AvgFitness), hammingAvg, hammingVar);
+            } else {
+                msg = string.Format("[{0}] Max: {1} MaxF: {2} Avg: {3} AvgF: {4}", GA.CurrentGeneration, MaxFitness, Folding.Neighbours(MaxFitness), AvgFitness, Folding.Neighbours(AvgFitness));
             }
-            var hammingAvg = hamminglist.Average();
-            for (int i = 0; i < hamminglist.Length; i++) {
-                hamminglist[i] = Math.Pow(hamminglist[i] - hammingAvg, 2);
-            }
-            var hammingVar = Math.Sqrt(hamminglist.Average());
-
-            var msg = string.Format("[{0}] Max: {1} MaxF: {2} Avg: {3} AvgF: {4} Hamming: {5} HV: {6}", GA.CurrentGeneration, MaxFitness, Folding.Neighbours(MaxFitness), AvgFitness, Folding.Neighbours(AvgFitness), GAC.Hamming ? hammingAvg : 0.0, hammingVar);
             Console.WriteLine(msg);
             Log.Log(msg);
         }

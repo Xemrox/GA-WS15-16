@@ -107,7 +107,7 @@ namespace XGA {
                 (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));*/
 
             WS.Add(new FoldingWorkingSet("SEQ24-1",
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2, Hamming = true },
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
                 new GenericGeneticOperatorProvider<char>(() =>
                 {
                     return new List<IGeneticOperator<char>> {

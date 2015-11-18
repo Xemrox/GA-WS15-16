@@ -16,6 +16,16 @@ namespace XGA.Folding {
         public Folding() {
         }
 
+        public Folding(int length) {
+            char[] ALP = { 'L', 'F', 'R' };
+            var rnd = new char[length];
+
+            for (int l = 0; l < length; l++) {
+                rnd[l] = ALP[RandomHelper.GetNextInteger(3)];
+            }
+            this.BaseType = rnd;
+        }
+
         protected static readonly int[][][] OrientMapping = {
             /*X*/new int[][] {
                               /*U   L   F   R*/
@@ -312,16 +322,6 @@ namespace XGA.Folding {
             var result = string.Format("F: {0} N: {1} O: {2} S: {3}{4}", Fitness, cNeighbour, cOverlapp, new string(this.BaseType), Environment.NewLine);
             log.Write(result);
             log.Write(new string('-', ( ( -MinP.X ) + MaxP.X + 3 ) * 4) + Environment.NewLine);
-        }
-
-        public char[] GenerateRandom(int length) {
-            char[] ALP = { 'L', 'F', 'R' };
-            var rnd = new char[length];
-
-            for (int l = 0; l < length; l++) {
-                rnd[l] = ALP[RandomHelper.GetNextInteger(3)];
-            }
-            return rnd;
         }
 
         public object Clone() {

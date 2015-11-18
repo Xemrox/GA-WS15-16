@@ -12,8 +12,6 @@ namespace XGA.Config {
 
         void print(T[] reference, Logger log);
 
-        T[] GenerateRandom(int length);
-
         T[] BaseType { get; set; }
     }
 }
