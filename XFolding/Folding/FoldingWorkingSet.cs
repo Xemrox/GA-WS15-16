@@ -13,6 +13,8 @@ namespace XGA.Folding {
         public FoldingWorkingSet(string Name, bool Hamming, GeneticAlgorithmConfig<char> GAC, Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
             base(Name, GAC, new FoldingDefaultOperatorProvider(), new FoldingCreator(), CM) {
             this.CalculateHamming = Hamming;
+
+            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
         }
 
         public FoldingWorkingSet(string Name,
@@ -20,6 +22,7 @@ namespace XGA.Folding {
             IGeneticOperatorProvider<char> Provider,
             Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
             base(Name, GAC, Provider, new FoldingCreator(), CM) {
+            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
         }
 
         private readonly HashSet<string> Masters = new HashSet<string>();
@@ -71,7 +74,6 @@ namespace XGA.Folding {
             } else {
                 msg = string.Format("[{0}] Max: {1} MaxF: {2} Avg: {3} AvgF: {4}", GA.CurrentGeneration, MaxFitness, Folding.Neighbours(MaxFitness), AvgFitness, Folding.Neighbours(AvgFitness));
             }
-            Console.WriteLine(msg);
             Log.Log(msg);
         }
 
@@ -84,7 +86,6 @@ namespace XGA.Folding {
             }
 
             var msg = String.Format("S: {0} G: {1} P: {2} M: {3} C: {4}{5}", new string(GAC.Sequence), GA.CurrentGeneration, GAC.PopulationSize, GAC.MutationRate, GAC.CrossoverRate, Environment.NewLine);
-            Console.WriteLine(msg);
             this.Log.Write(msg);
         }
     }

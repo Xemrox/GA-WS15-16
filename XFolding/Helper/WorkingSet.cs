@@ -17,12 +17,13 @@ namespace XGA.Helper {
 
         public GeneticAlgorithmConfig<T> GAC { get; private set; }
 
-        public Logger Log { get; private set; }
+        public Logger Log { get; protected set; }
 
         protected WorkingSet(string Name, GeneticAlgorithmConfig<T> GAC, IGeneticOperatorProvider<T> Provider, IFitnessMeasuredCreator<T> Creator, Func<GeneticAlgorithm<T>, C> CM) {
             this.Lock = new ManualResetEvent(false);
             this.Name = Name;
-            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
+            this.Log = new EmptyLogger();
+            //this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
             this.GA = new GeneticAlgorithm<T>(GAC, Provider, Creator, Log);
             this.CalculationMode = CM(this.GA);
             this.GAC = GAC;

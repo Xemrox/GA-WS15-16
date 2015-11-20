@@ -58,6 +58,9 @@ namespace XGA.Helper {
         }
     }
 
+    public class EmptyLogger : Logger {
+    }
+
     public class ConsoleLogger : Logger {
 
         public override void Log(string msg, string lvl = "log") {

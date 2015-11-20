@@ -5,6 +5,7 @@ using System.Threading;
 using XGA.Config;
 using XGA.Folding;
 using XGA.Helper;
+using XGA.SilentStatistics;
 
 namespace XGA {
 
@@ -80,7 +81,19 @@ namespace XGA {
                 new GeneticAlgorithmConfig() { Sequence = SEQ01 },
                 (GA) => new FiniteCalculation<Folding.Folding, string>(GA, 100));*/
 
-            var WS = new List<FoldingWorkingSet>();
+            var WS = new List<WorkingSet<char, CalculationMode<char>>>();
+
+            WS.Add(new SilentWorkingSet("SEQ64",
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
+                new GenericGeneticOperatorProvider<char>(() =>
+                {
+                    return new List<IGeneticOperator<char>> {
+                    new FoldingSelectOperator(),
+                    new FoldingMutateOperator(),
+                    new FoldingCrossoverOperator()
+                };
+                }),
+                (GA) => new FiniteCalculation<char>(GA, 100)));
 
             /*WS.Add(new FoldingWorkingSet("SEQ01",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000 },
@@ -106,7 +119,7 @@ namespace XGA {
                 }),
                 (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));*/
 
-            WS.Add(new FoldingWorkingSet("SEQ24-1",
+            /*WS.Add(new FoldingWorkingSet("SEQ24-1",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
                 new GenericGeneticOperatorProvider<char>(() =>
                 {
@@ -116,7 +129,7 @@ namespace XGA {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<char>(GA, 100)));
+                (GA) => new FiniteCalculation<char>(GA, 100)));*/
 
             /*WS.Add(new FoldingWorkingSet("SEQ24-2",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
