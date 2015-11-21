@@ -29,7 +29,7 @@ namespace XGA.Helper {
             this.GAC = GAC;
         }
 
-        public void Run(Object Context) {
+        public void Run(Object Context = null) {
             this.CalculationMode.Run(this.Evaluate);
 
             this.Finished();

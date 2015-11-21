@@ -24,7 +24,7 @@ namespace XGA.SilentStatistics {
             IGeneticOperatorProvider<char> Provider,
             Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
             base(Name, GAC, Provider, new FoldingCreator(), CM) {
-            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"))); ;
+            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}-{3}-{4}.log", Name, GAC.PopulationSize, GAC.CrossoverRate.ToString("F2"), GAC.MutationRate.ToString("F2"), DateTime.Now.ToString("yyyy-MM-dd-HH-mm"))); ;
         }
 
         protected override void Evaluate() {
