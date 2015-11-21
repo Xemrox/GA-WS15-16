@@ -1,5 +1,5 @@
 find_files = $(wildcard $(dir)/*.cs)
-dirs := . Config Helper Folding
+dirs := . Config Helper Folding SilentStatistics
 files := $(foreach dir,$(dirs),$(find_files))
 
 target = mono/GA.exe
