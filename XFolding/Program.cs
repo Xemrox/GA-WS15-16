@@ -68,7 +68,8 @@ namespace XGA {
             }
             int iCurrentWork = 1;
             while (Tasks.Count > 0 || Work.Count > 0) {
-                for (int i = Tasks.Count; i < 10; i++) {
+                var min = Math.Min(15, Work.Count);
+                for (int i = Tasks.Count; i < min; i++) {
                     var tuple = Work.Pop();
                     Tasks.Add(Task.Factory.StartNew(() =>
                     {
