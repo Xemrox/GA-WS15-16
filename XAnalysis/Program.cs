@@ -11,8 +11,8 @@ namespace XAnalysis {
     internal class Program {
 
         private struct DataTouple {
-            public double CrossOver { get; set; }
-            public double Mutate { get; set; }
+            public string CrossOver { get; set; }
+            public string Mutate { get; set; }
 
             //public List<int> Fitness { get; set; }
             public int Fitness { get; set; }
@@ -26,29 +26,28 @@ namespace XAnalysis {
 
             public override bool Equals(object obj) {
                 return ( (DataTouple) obj ).CrossOver == ( this.CrossOver ) &&
-                    ( (DataTouple) obj ).Mutate == ( this.Mutate );
+                       ( (DataTouple) obj ).Mutate == ( this.Mutate );
             }
         }
 
         private struct DataGroup {
-            public double Crossover { get; internal set; }
+            public string Crossover { get; set; }
 
             public List<DataTouple> items {
                 get; set;
             }
 
             public Object key { get; set; }
-            public double Mutate { get; internal set; }
+            public string Mutate { get; set; }
         }
 
-        private static void Main(string[] args) {
-            var rawData = new List<DataTouple>();
-
+        private static void AnalyzeZip() {
             Console.WriteLine("Analyzing data");
             int iFiles = 0;
 
             var zipFolder = new DirectoryInfo("data");
             foreach (var zFile in zipFolder.EnumerateFiles()) {
+                var rawData = new List<DataTouple>();
                 using (ZipFile zip = ZipFile.Read(zFile.FullName)) {
                     foreach (var e in zip.Entries) {
                         var f = e.FileName.Split('-');
@@ -56,21 +55,15 @@ namespace XAnalysis {
                             e.Extract(ms);
                             ms.Position = 0;
                             using (var s = new StreamReader(ms)) {
-                                var raw = new DataTouple { CrossOver = double.Parse(f[2]), Mutate = double.Parse(f[3]) };
+                                var raw = new DataTouple { CrossOver = f[2], Mutate = f[3] };
                                 var sb = new StringBuilder();
                                 string line;
                                 while (( line = s.ReadLine() ) != null) {
-                                    /*if (raw.Fitness == null) {
-                                        raw.Fitness = new List<int>();
-                                    }*/
-
                                     if (line.StartsWith("F")) {
-                                        //raw.Fitness.Add(int.Parse(line.Split(' ')[1]));
                                         raw.Fitness = int.Parse(line.Split(' ')[1]);
                                         break;
                                     }
                                 }
-                                //raw.data = sb.ToString();
                                 rawData.Add(raw);
                             }
                         }
@@ -79,48 +72,90 @@ namespace XAnalysis {
                     Console.WriteLine("{0}: {1}", zFile.Name, zip.Entries.Count);
                     iFiles += zip.Entries.Count;
                 }
+
+                var group = rawData.GroupBy(x => new { x.CrossOver, x.Mutate }).Select(x => new DataGroup { key = x.Key, Crossover = x.Key.CrossOver, Mutate = x.Key.Mutate, items = x.ToList() });
+                using (var wr = new StreamWriter(zFile.Name + ".txt")) {
+                    foreach (var g in group) {
+                        foreach (var itm in g.items) {
+                            wr.WriteLine("{0}|{1}-{2}", g.Crossover, g.Mutate, itm.Fitness);
+                        }
+                    }
+                    wr.Flush();
+                    wr.Close();
+                }
             }
 
             Console.WriteLine("Got {0} entrys", iFiles);
+        }
 
-            var group = rawData.GroupBy(x => new { x.CrossOver, x.Mutate }).Select(x => new DataGroup { key = x.Key, Crossover = x.Key.CrossOver, Mutate = x.Key.Mutate, items = x.ToList() });
-            var map = new Dictionary<double, Dictionary<double, int>>();
-            foreach (var g in group) {
-                //Console.WriteLine("{0}-{1}", g.key, g.items.Select(x => x.Fitness).Median());
-                Dictionary<double, int> cont;
-                if (map.TryGetValue(g.Crossover, out cont)) {
-                    cont.Add(g.Mutate, g.items.Select(x => x.Fitness).Median());
-                } else {
-                    var inner = new Dictionary<double, int>();
-                    inner.Add(g.Mutate, g.items.Select(x => x.Fitness).Median());
-                    map.Add(g.Crossover, inner);
+        private static void Main(string[] args) {
+            AnalyzeZip();
+
+            Console.WriteLine("Plotting data");
+            var runPlots = new DirectoryInfo(".").GetFiles("run*.zip.txt").Select(x => x.FullName);
+            var plots = new Dictionary<string, List<int>>();
+            foreach (var run in runPlots) {
+                using (var r = new StreamReader(run)) {
+                    string line;
+                    while (( line = r.ReadLine() ) != null) {
+                        var parts = line.Split('-');
+                        if (parts.Length > 0) {
+                            List<int> itms;
+                            if (plots.TryGetValue(parts[0], out itms)) {
+                                itms.Add(int.Parse(parts[1]));
+                            } else {
+                                itms = new List<int>();
+                                itms.Add(int.Parse(parts[1]));
+                                plots.Add(parts[0], itms);
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    r.Close();
                 }
             }
-            group = null;
 
+            Console.WriteLine("Got {0} plot entrys", plots.Count);
+
+            var stats = plots.Select(x => new { x.Key, Median = x.Value.Median() });
+            var max = stats.Max(x => x.Median);
+            var maxMeds = stats.Where(x => x.Median == max);
+            Console.WriteLine("Maximum Medians:");
+            foreach (var m in maxMeds) {
+                Console.WriteLine("{0}: {1}", m.Key, m.Median);
+            }
+
+            string cur = null;
+            bool bBreak = true;
             using (var wr = new StreamWriter("output.txt")) {
-                var line = new StringBuilder();
-                /*for (int i = 1; i <= 100; i++) {
-                    line.Append(' ');
-                    line.Append(i);
-                }
-                wr.WriteLine(line.ToString());
-                line.Clear();*/
-                for (double mut = 0.01; mut <= 1.01; mut += 0.01) {
-                    //line.Append((int) Math.Round(mut * 100));
-                    for (double cross = 0.01; cross <= 1.01; cross += 0.01) {
-                        line.Append(' ');
-                        line.Append(map[Math.Round(mut, 2)][Math.Round(cross, 2)]);
+                wr.Write("0 ".Repeat((int) Math.Sqrt(stats.Count())));
+                wr.WriteLine("0");
+                foreach (var elem in stats) {
+                    var f = elem.Key.Split('|')[0];
+                    if (cur == null) {
+                        cur = f;
+                        wr.Write("0 ");
+                    } else if (f != cur) {
+                        cur = f;
+                        wr.WriteLine();
+                        wr.Write("0 ");
+                        bBreak = true;
                     }
-                    wr.WriteLine(line.ToString());
-                    line.Clear();
+                    if (bBreak) {
+                        wr.Write("{0}", elem.Median);
+                        bBreak = false;
+                    } else {
+                        wr.Write(" {0}", elem.Median);
+                    }
                 }
                 wr.Flush();
+                wr.Close();
             }
 
-            /*foreach (var d in rawData) {
-                Console.WriteLine("{0}-{1}", d.CrossOver, d.Mutate);
-            }*/
+            Console.WriteLine("Generated plotdata");
+
+            System.Diagnostics.Process.Start("CreateMap.bat", "");
 
             Console.ReadKey();
         }
