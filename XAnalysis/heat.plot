@@ -1,5 +1,5 @@
 set terminal png transparent nocrop enhanced size 1050,920 font "arial,10" 
-set output 'CrossMutationMap.png'
+set output outfile
 
 set border linewidth 0
 #unset key
@@ -12,7 +12,7 @@ set rmargin screen 0.8
 set tmargin screen 0.9
 set bmargin screen 0.1
 
-set title "Crossover / Mutation Heatmap" 
+set title "Crossover / Mutation Heatmap-".name 
 #set xrange [ 0.00000 : 1.00000 ] noreverse nowriteback
 #set yrange [ 0.00000 : 1.00000 ] noreverse nowriteback
 set xrange [1 : 100]
@@ -40,5 +40,5 @@ set palette defined ( 0 '#FFFFCC',\
 set pm3d map
 set pm3d interpolate 0,0
 #set pm3d interpolate 1,1
-splot 'output.txt' matrix with image
+splot infile matrix with image
 ##plot 'heatmap.csv' matrix columnheaders using 1:2:3 with image
