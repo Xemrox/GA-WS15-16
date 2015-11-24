@@ -42,6 +42,10 @@ namespace XGA {
         }
 
         public static void Main(string[] args) {
+            if (args.Length > 0 && !string.IsNullOrEmpty(args[0])) {
+                System.Environment.CurrentDirectory = args[0];
+            }
+
             Console.Title = "GA-2D-HP Modell";
 
             /*var f = new Folding.Folding();
