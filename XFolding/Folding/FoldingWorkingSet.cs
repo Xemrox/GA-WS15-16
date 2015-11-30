@@ -13,16 +13,19 @@ namespace XGA.Folding {
         public FoldingWorkingSet(string Name, bool Hamming, GeneticAlgorithmConfig<char> GAC, Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
             base(Name, GAC, new FoldingDefaultOperatorProvider(), new FoldingCreator(), CM) {
             this.CalculateHamming = Hamming;
-
-            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
+            this.Log = new ConsoleLogger();
+            //this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
         }
 
         public FoldingWorkingSet(string Name,
+            bool Hamming,
             GeneticAlgorithmConfig<char> GAC,
             IGeneticOperatorProvider<char> Provider,
             Func<GeneticAlgorithm<char>, CalculationMode<char>> CM) :
             base(Name, GAC, Provider, new FoldingCreator(), CM) {
-            this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
+            //this.Log = new StreamLogger(string.Format("{0}-{1}-{2}.log", Name, GAC.PopulationSize, DateTime.Now.ToString("yyyy-MM-dd-HH-mm")));
+            this.Log = new ConsoleLogger();
+            this.CalculateHamming = Hamming;
         }
 
         private readonly HashSet<string> Masters = new HashSet<string>();
@@ -33,7 +36,8 @@ namespace XGA.Folding {
             int cHemming = 0;
             for (int i = 0; i < baseFold.Length; i++) {
                 //char calculation
-                cHemming += Math.Abs(Folding.MapDir(baseFold[i]) - Folding.MapDir(compareFold[i]));
+                if (baseFold[i] != compareFold[i]) cHemming++;
+                //cHemming += Math.Abs(Folding.MapDir(baseFold[i]) - Folding.MapDir(compareFold[i]));
             }
             return cHemming;
         }

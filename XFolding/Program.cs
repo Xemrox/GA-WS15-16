@@ -59,9 +59,9 @@ namespace XGA {
             F.print(SEQ01.ToCharArray(), s);
             s.Finish();*/
 
-            //var WS = new List<WorkingSet<char, CalculationMode<char>>>();
+            var WS = new List<WorkingSet<char, CalculationMode<char>>>();
 
-            var Work = new Stack<ParamTuple>();
+            /*var Work = new Stack<ParamTuple>();
 
             var Tasks = new List<Task>();
 
@@ -79,14 +79,7 @@ namespace XGA {
                     {
                         var WS = new SilentWorkingSet("SEQ36",
                                 new GeneticAlgorithmConfig<char> { Sequence = SEQ36.ToCharArray(), PopulationSize = 200, MutationRate = tuple.MutationRate, CrossoverRate = tuple.CrossoverRate },
-                                new GenericGeneticOperatorProvider<char>(() =>
-                                {
-                                    return new List<IGeneticOperator<char>> {
-                                        new FoldingSelectOperator(),
-                                        new FoldingMutateOperator(),
-                                        new FoldingCrossoverOperator()
-                                    };
-                                }),
+                                new FoldingDefaultOperatorProvider(),
                                 (GA) => new FiniteCalculation<char>(GA, 100));
                         WS.Run();
                     }));
@@ -94,7 +87,7 @@ namespace XGA {
                 }
                 var x = Task.WhenAny(Tasks);
                 Tasks.Remove(x.Result);
-            }
+            }*/
 
             /*WS.Add(new FoldingWorkingSet("SEQ01",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ01.ToCharArray(), PopulationSize = 1000 },
@@ -120,8 +113,8 @@ namespace XGA {
                 }),
                 (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));*/
 
-            /*WS.Add(new FoldingWorkingSet("SEQ24-1",
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
+            WS.Add(new FoldingWorkingSet("SEQ24-1", true,
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ20.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
                 new GenericGeneticOperatorProvider<char>(() =>
                 {
                     return new List<IGeneticOperator<char>> {
@@ -130,7 +123,7 @@ namespace XGA {
                     new FoldingCrossoverOperator()
                 };
                 }),
-                (GA) => new FiniteCalculation<char>(GA, 100)));*/
+                (GA) => new FiniteCalculation<char>(GA, 100)));
 
             /*WS.Add(new FoldingWorkingSet("SEQ24-2",
                 new GeneticAlgorithmConfig<char> { Sequence = SEQ24.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
@@ -156,12 +149,13 @@ namespace XGA {
                 }),
                 (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 100)));
                 */
-            /*foreach (var ws in WS) {
+            foreach (var ws in WS) {
                 Console.WriteLine("Started: {0}", ws.Name);
                 ThreadPool.QueueUserWorkItem(ws.Run);
             }
 
-            WaitHandle.WaitAll(WS.Select(x => x.Lock).ToArray());*/
+            WaitHandle.WaitAll(WS.Select(x => x.Lock).ToArray());
+            Console.ReadLine();
 
             /**/
 

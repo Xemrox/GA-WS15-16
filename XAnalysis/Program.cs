@@ -58,7 +58,7 @@ namespace XAnalysis {
                                 e.Extract(ms);
                                 ms.Position = 0;
                                 using (var s = new StreamReader(ms)) {
-                                    var raw = new DataTouple { CrossOver = f[2], Mutate = f[3] };
+                                    var raw = new DataTouple { CrossOver = f[2].Replace(',', '.'), Mutate = f[3].Replace(',', '.') };
                                     var sb = new StringBuilder();
                                     string line;
                                     while (( line = s.ReadLine() ) != null) {
@@ -106,8 +106,13 @@ namespace XAnalysis {
 
             string cur = null;
             bool bBreak = true;
+
+            int root = (int) Math.Sqrt(stats.Count());
+
+            //Console.WriteLine("Got: {0} stats rooted: {1}", stats.Count(), root);
+
             using (var wr = new StreamWriter(string.Format("data\\output-{0}.txt", type))) {
-                wr.Write("0 ".Repeat((int) Math.Sqrt(stats.Count())));
+                wr.Write("0 ".Repeat(root));
                 wr.WriteLine("0");
                 foreach (var elem in stats) {
                     var f = elem.Key.Split('|')[0];
@@ -169,7 +174,7 @@ namespace XAnalysis {
 
             Console.WriteLine("Got {0} plot entrys", plots.Count);
 
-            PlotData(plots, x => x.Median(), "median");
+            PlotData(plots, x => x.OrderBy(y => y).Median(), "median");
             PlotData(plots, x => x.Max(), "max");
             //PlotData(plots, x => x.Min(), "min");
             PlotData(plots, x => x.Average(), "average");
