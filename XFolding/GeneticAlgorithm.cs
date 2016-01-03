@@ -28,7 +28,7 @@ namespace XGA {
             public double Fitness { get; set; }
         }
 
-        public GACache[] Cache { get; set; }
+        public List<GACache> Cache { get; set; }
 
         public IEnumerable<IFitnessMeasured<T>> Elements {
             get {
@@ -78,11 +78,11 @@ namespace XGA {
 
             this.GAC = gac;
 
-            this.Cache = new GACache[this.GAC.PopulationSize];
+            this.Cache = new List<GACache>(this.GAC.PopulationSize);
 
             for (int i = 0; i < this.GAC.PopulationSize; i++) {
                 var Elem = Creator.CreateNew(this.GAC);
-                Cache[i] = new GACache() { GAElement = Elem, Fitness = Elem.CalculateFitness(this.GAC.Sequence) };
+                Cache.Add(new GACache() { GAElement = Elem, Fitness = Elem.CalculateFitness(this.GAC.Sequence) });
             }
         }
 

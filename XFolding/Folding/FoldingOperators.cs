@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using XGA.Config;
 using XGA.Helper;
@@ -34,14 +35,30 @@ namespace XGA.Folding {
                 Selection.Add(new GeneticAlgorithm<char>.GACache(GA.Cache[iIndex]));
             }
 
-            GA.Cache = Selection.ToArray();
+            GA.Cache = Selection;
         }
     }
 
-    public class FoldingTournamentSelect : IGeneticOperator<char> {
+    public class FoldingLinearRankSelectOperator : IGeneticOperator<char> {
 
         public void Operate(GeneticAlgorithm<char> GA, Logger LOG) {
-            throw new NotImplementedException();
+            var sortedCache = GA.Cache.OrderByDescending(x => x.Fitness).ToList();
+
+            const double iMax = 1; //1<=max<=2
+            const double iMin = 2 - iMax;
+            double n = GA.GAC.PopulationSize;
+
+            Func<int, int> ExpVal = (rank) =>
+            {
+                return (int) Math.Round(( iMin + iMax ) * ( ( n - (double) rank ) / ( n - 1 ) ));
+            };
+            var newCache = new List<GeneticAlgorithm<char>.GACache>(GA.GAC.PopulationSize);
+            for (int i = 0; i < GA.GAC.PopulationSize; ++i) {
+                for (int selCount = 0; selCount < ExpVal(i + 1); ++selCount) {
+                    newCache.Add(new GeneticAlgorithm<char>.GACache(sortedCache.ElementAt(i)));
+                }
+            }
+            GA.Cache = newCache;
         }
     }
 

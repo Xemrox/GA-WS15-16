@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using XGA.Config;
 
@@ -29,8 +30,14 @@ namespace XGA.Helper {
             this.GAC = GAC;
         }
 
+        public Stopwatch watch = new Stopwatch();
+
         public void Run(Object Context = null) {
+            this.watch.Start();
             this.CalculationMode.Run(this.Evaluate);
+            this.watch.Stop();
+
+            Console.WriteLine(this.watch.ElapsedMilliseconds / 1000);
 
             this.Finished();
 

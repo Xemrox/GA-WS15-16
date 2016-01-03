@@ -113,12 +113,13 @@ namespace XGA {
                 }),
                 (GA) => new FiniteCalculation<Folding.Folding, char>(GA, 2000)));*/
 
-            WS.Add(new FoldingWorkingSet("SEQ24-1", true,
-                new GeneticAlgorithmConfig<char> { Sequence = SEQ20.ToCharArray(), PopulationSize = 200, MutationRate = 0.03, CrossoverRate = 0.2 },
+            WS.Add(new FoldingWorkingSet("SEQ24-1", false,
+                new GeneticAlgorithmConfig<char> { Sequence = SEQ64.ToCharArray(), PopulationSize = 2000, MutationRate = 0.03, CrossoverRate = 0.5 },
                 new GenericGeneticOperatorProvider<char>(() =>
                 {
                     return new List<IGeneticOperator<char>> {
-                    new FoldingSelectOperator(),
+                    //new FoldingSelectOperator(),
+                    new FoldingLinearRankSelectOperator(),
                     new FoldingMutateOperator(),
                     new FoldingCrossoverOperator()
                 };
