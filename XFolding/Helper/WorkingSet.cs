@@ -37,8 +37,8 @@ namespace XGA.Helper {
             this.CalculationMode.Run(this.Evaluate);
             this.watch.Stop();
 
-            Console.WriteLine(this.watch.ElapsedMilliseconds / 1000);
-
+            Console.WriteLine("Elapsed Time: {0}s",this.watch.ElapsedMilliseconds / 1000.0);
+            
             this.Finished();
 
             this.Log.Finish();

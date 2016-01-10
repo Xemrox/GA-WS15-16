@@ -75,4 +75,37 @@ namespace XGA.Helper {
             Console.Write(s);
         }
     }
+
+    public class MixedLogger : Logger
+    {
+        private readonly StreamLogger StreamLogger;
+        private readonly ConsoleLogger ConsoleLogger;
+
+        public MixedLogger(string target)
+        {
+            this.StreamLogger = new StreamLogger(target);
+            this.ConsoleLogger = new ConsoleLogger();
+        }
+
+        public override void Log(string msg, string lvl = "log")
+        {
+            base.Log(msg, lvl);
+            StreamLogger.Log(msg, lvl);
+            ConsoleLogger.Log(msg,lvl);
+        }
+
+        public override void Finish()
+        {
+            base.Finish();
+            StreamLogger.Finish();
+            ConsoleLogger.Finish();
+        }
+
+        public override void Write(string s)
+        {
+            base.Write(s);
+            StreamLogger.Write(s);
+            ConsoleLogger.Write(s);
+        }
+    }
 }
