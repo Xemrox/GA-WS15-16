@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace XGA.Config {
 
@@ -16,12 +17,14 @@ namespace XGA.Config {
             this.GA = GA;
         }
 
-        public int CurrentGeneration {
+        public int CurrentGeneration
+        {
             get { return this.GA.CurrentGeneration; }
             set { this.GA.CurrentGeneration = value; }
         }
 
-        protected GeneticAlgorithm<T> GA {
+        protected GeneticAlgorithm<T> GA
+        {
             get; set;
         }
 
@@ -46,6 +49,33 @@ namespace XGA.Config {
                 GA.GenerationStep();
                 Evaluate();
             }
+        }
+    }
+
+    public class TimedCalculation<T> : CalculationMode<T> where T : new() {
+        public int MaxSeconds { get; private set; }
+        private Stopwatch Watch = new Stopwatch();
+
+        public TimedCalculation(GeneticAlgorithm<T> GA, int MaxSeconds) : base(GA) {
+            this.MaxSeconds = MaxSeconds;
+        }
+
+        public override string getName() {
+            return "Timed";
+        }
+
+        public override void Run(Action Evaluate) {
+            int iRuns = 1;
+            Watch.Reset();
+            Watch.Start();
+            while (( Watch.ElapsedMilliseconds ) + ( Watch.ElapsedMilliseconds / iRuns ) * 1.3 < this.MaxSeconds * 1000.0d) {
+                GA.GenerationStep();
+                Evaluate();
+                iRuns++;
+                //Console.WriteLine("AVGGTime: {0}", ( Watch.ElapsedMilliseconds / iRuns ));
+            }
+            Watch.Stop();
+            GA.Log.Write(string.Format("T: {0} AVGT: {1}", Watch.ElapsedMilliseconds, Watch.ElapsedMilliseconds / iRuns));
         }
     }
 }

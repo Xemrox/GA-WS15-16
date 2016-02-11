@@ -30,15 +30,15 @@ namespace XGA.Helper {
             this.GAC = GAC;
         }
 
-        public Stopwatch watch = new Stopwatch();
+        public Stopwatch totalWatch = new Stopwatch();
 
         public void Run(Object Context = null) {
-            this.watch.Start();
+            this.totalWatch.Start();
             this.CalculationMode.Run(this.Evaluate);
-            this.watch.Stop();
+            this.totalWatch.Stop();
 
-            Console.WriteLine("Elapsed Time: {0}s",this.watch.ElapsedMilliseconds / 1000.0);
-            
+            Console.WriteLine("Elapsed Time: {0}s", this.totalWatch.ElapsedMilliseconds / 1000.0);
+
             this.Finished();
 
             this.Log.Finish();
